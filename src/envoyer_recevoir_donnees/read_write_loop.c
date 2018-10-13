@@ -38,7 +38,7 @@ void read_write_loop(int sfd){
 
             size_t readed = (size_t) c;
 
-            int error = write(sfd, buffer, readed);
+            int error = send(sfd, buffer, readed, 0);
             if(error == -1){
                 fprintf(stderr, "Error while writing in sfd\n");
             }
