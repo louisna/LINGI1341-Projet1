@@ -18,8 +18,8 @@ int main(int argc, char* argv[]){
 
 	if(argc < 3){
 		fprintf(stderr, "The program needs at least 2 arguments to work:\n"
-			"- hostname: domain name or IPv6 receiver's adress\n"
-			"- port: UDP port number where the sender was plugged\n");
+			"- hostname: domain name or IPv6 sender's adress\n"
+			"- port: UDP port number where the receiver was plugged\n");
 		exit(EXIT_FAILURE);
 	}
 
@@ -39,7 +39,7 @@ int main(int argc, char* argv[]){
 	if(has_file && argc < 5){
 		fprintf(stderr, "The program needs at least 2 arguments to work:\n"
 			"(+ the 2 needed for the file)\n"
-			"- hostname: domain name or IPv6 receiver's adress\n"
+			"- hostname: domain name or IPv6 sender's adress\n"
 			"- port: UDP port number where the sender was plugged\n");
 		exit(EXIT_FAILURE);
 	}
@@ -60,9 +60,15 @@ int main(int argc, char* argv[]){
 
 	/*  Get a socket */
 	int sfd;
-	sfd = create_socket(NULL, -1, &addr, port); /* Connected */
+	sfd = create_socket(&addr, port, NULL, -1); /* Bound */
 	if(sfd < 0){
 		fprintf(stderr, "Failed to create the socket\n");
+		exit(EXIT_FAILURE);
+	}
+
+	if(sfd > 0 && wait_for_client(sfd) < 0){
+		fprintf(stderr, "Could not connect the socket after the first message\n");
+		close(sfd);
 		exit(EXIT_FAILURE);
 	}
 
