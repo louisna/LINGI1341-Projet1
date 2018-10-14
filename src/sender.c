@@ -15,7 +15,7 @@ int main(int argc, char* argv[]){
 	int opt;
 	char* host = "::1";
 	char* file = NULL;
-	int has_file = 0;
+	int fd;
 
 	if(argc < 3){
 		fprintf(stderr, "The program needs at least 2 arguments to work:\n"
@@ -27,7 +27,6 @@ int main(int argc, char* argv[]){
 	while((opt = getopt(argc, argv, "f:")) != -1){
 		switch(opt){
 			case 'f':
-				has_file = 1;
 				file = optarg;
 				break;
 			default:
@@ -50,6 +49,17 @@ int main(int argc, char* argv[]){
 
 	/*** Taken from chat.c of the INGInious problem 
 	     "envoyer et recevoir des donnes" ***/
+
+	if(file){
+		fd = open(file, O_RDWR);
+		if(fd < 0){
+			fprintf(stderr, "Impossible to open the file %s. Using now stdin\n", file);
+			d = STDIN_FILENO;
+		}
+	}
+	else{
+		fd = STDIN_FILENO;
+	}
 
 	/* Resolve the hostname */
 	struct sockaddr_in6 addr;
