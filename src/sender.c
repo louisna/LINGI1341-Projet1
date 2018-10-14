@@ -36,7 +36,7 @@ int main(int argc, char* argv[]){
 		}
 	}
 
-	if(has_file && argc < 5){
+	if(file && argc < 5){
 		fprintf(stderr, "The program needs at least 2 arguments to work:\n"
 			"(+ the 2 needed for the file)\n"
 			"- hostname: domain name or IPv6 receiver's adress\n"
