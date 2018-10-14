@@ -1,3 +1,5 @@
-.DS_Store
-*.o
-/src
+*
+!*.c
+!Makefile
+!*.h
+!README.md
