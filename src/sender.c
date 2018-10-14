@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <sys/types.h>          /* See NOTES */
+#include <sys/socket.h>
 #include "envoyer_recevoir_donnees/real_address.h"
 #include "envoyer_recevoir_donnees/create_socket.h"
 #include "envoyer_recevoir_donnees/read_write_loop.h"
@@ -9,7 +11,6 @@
 int main(int argc, char* argv[]){
 
 	/* default values */
-	int client = 0;
 	int port = 12345;
 	int opt;
 	char* host = "::1";
