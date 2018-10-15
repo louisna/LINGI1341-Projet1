@@ -27,5 +27,5 @@ receiver : src/receiver.c nyancat.o packet_implement.o
 
 sender: src/sender.c nyancat.o packet_implement.o
 	gcc -o sender src/sender.c nyancat.o packet_implement.o -std=c99 -lz
-	
+
 clean : rm -f sender receiver nyancat.o packet_implement.o
