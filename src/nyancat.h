@@ -1,6 +1,16 @@
-#include <netinet/in.h> /* * sockaddr_in6 */
-#include <sys/types.h> /* sockaddr_in6 */
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netdb.h>
+#include <netinet/in.h>
+#include <stdlib.h> /* EXIT_X */
+#include <stdio.h> /* fprintf */
+#include <unistd.h> /* getopt */
+#include <sys/select.h>
+#include <sys/time.h>
+#include <sys/types.h>
+#include <string.h>
 #include "packet_implement.h"
+
 
 /* Resolve the resource name to an usable IPv6 address
  * @address: The name to resolve

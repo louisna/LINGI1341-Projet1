@@ -1,14 +1,4 @@
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netdb.h>
-#include <netinet/in.h>
-#include <stdlib.h> /* EXIT_X */
-#include <stdio.h> /* fprintf */
-#include <unistd.h> /* getopt */
-#include <sys/select.h>
-#include <sys/time.h>
-#include <sys/types.h>
-#include <string.h>
+#include "nyancat.h"
 
 int create_socket(struct sockaddr_in6 *source_addr, int src_port, struct sockaddr_in6 *dest_addr, int dst_port){
 
