@@ -3,10 +3,8 @@
 #include <unistd.h>
 #include <sys/types.h>          /* See NOTES */
 #include <sys/socket.h>
-#include "envoyer_recevoir_donnees/real_address.h"
-#include "envoyer_recevoir_donnees/create_socket.h"
-#include "envoyer_recevoir_donnees/read_write_loop.h"
-#include "envoyer_recevoir_donnees/wait_for_client.h"
+#include "nyancat.h"
+#include "packet_implement.h"
 
 int main(int argc, char* argv[]){
 
