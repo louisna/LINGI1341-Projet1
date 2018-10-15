@@ -57,3 +57,4 @@ const char * real_address(const char *address, struct sockaddr_in6 *rval){
     memcpy(rval, result->ai_addr, sizeof(struct sockaddr_in6)); // copying the values to rval
     freeaddrinfo(result); // free the addressinfo after copying
     return NULL; // no error
+}

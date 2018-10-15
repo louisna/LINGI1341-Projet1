@@ -1,5 +1,6 @@
 #include <netinet/in.h> /* * sockaddr_in6 */
 #include <sys/types.h> /* sockaddr_in6 */
+#include "packet_implement.h"
 
 /* Resolve the resource name to an usable IPv6 address
  * @address: The name to resolve
@@ -24,7 +25,7 @@ int create_socket(struct sockaddr_in6 *source_addr, int src_port,
 
 typedef struct node{
 	pkt_t* packet;
-	node_t* next;
+	struct node* next;
 } node_t;
 
 typedef struct linked_list{
