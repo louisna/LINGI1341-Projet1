@@ -57,7 +57,7 @@ int read_to_list(int fd, list_t* list, int window, int new_seqnum){
 				if(err){
 					fprintf(stderr, "Error while adding the packet to the queue, discarded\n");
 				}
-				new_seqnum = (new_seqnum + 1)%255; // 256 ?
+				new_seqnum = (new_seqnum + 1)%256; // 256 ?
 			}	
 		}
 	}
@@ -187,7 +187,7 @@ int main(int argc, char* argv[]){
 	}
 
 	// do something
-	int seqnum = 4;
+	int seqnum = 254;
 	list_t* list = list_create();
 	int error = read_to_list(fd, list, 3, seqnum);
 	print_list(list);
