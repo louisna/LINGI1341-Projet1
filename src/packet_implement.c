@@ -333,43 +333,6 @@ void print_data(pkt_t* pkt){
 		pkt->type, pkt->truncated, pkt->window, pkt->length, pkt->crc1, pkt->payload);
 }
 
-int main(int argc, char* argv[]){
-    pkt_t* pkt = pkt_new();
-    char* a = "Salut";
 
-    pkt_set_payload(pkt, a, 6);
-    pkt->type = 1;
-    pkt->seqnum = 35;
-    pkt->truncated = 0;
-
-    /*
-    uLong crc = crc32(0L, Z_NULL, 0);
-    uLong crc2 = crc32(crc, (Bytef*) pkt_get_payload(pkt), pkt_get_length(pkt));
-    pkt->crc2 = crc2;
-    */
-
-    // copie du packet avec tr=0 dans un char*
-    // copie de char* buf à pkt_t temp pour mettre tr à 0
-    //calcul du crc1 du packet en network
-    /*
-    pkt->length = htons(pkt->length);
-    uLong crc1 = crc32(0,(Bytef*) pkt, sizeof(uint64_t));
-    pkt->crc1 = crc1;
-    pkt->length = ntohs(pkt->length);
-    */
-    char* buffer = (char*)malloc(sizeof(char)*100);
-
-    size_t length = (3*sizeof(uint32_t) + sizeof(char)*6)*5;
-
-    pkt_encode(pkt, buffer, &length);
-
-    pkt_del(pkt);
-
-    pkt_t* p = pkt_new();
-    pkt_decode(buffer, sizeof(char)*100, p);
-    print_data(p);
-
-    free(buffer);
-}
 
 

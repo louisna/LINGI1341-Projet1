@@ -1,7 +1,7 @@
 *
-!*.c
 !Makefile
-!*.h
 !README.md
-!src
-!inginious
+!src/*.c
+!src/*.h
+!src/inginious/**/*.c
+!src/inginious/**/*.h

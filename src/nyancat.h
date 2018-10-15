@@ -51,3 +51,4 @@ typedef struct linked_list{
  * @return: -1 in case of error, 0 otherwise
  */
 int add_element_queue(list_t* list, pkt_t* packet);
+
