@@ -16,15 +16,16 @@ LDFLAGS = -rdynamic -lz
 
 all: sender receiver
 
-create_socket.o : src/envoyer_recevoir_donnees/create_socket.c src/envoyer_recevoir_donnees/create_socket.h
-		gcc -c src/envoyer_recevoir_donnees/create_socket.c src/envoyer_recevoir_donnees/create_socket.h -std=c99 -lz
+nyancat.o : src/nyancat.c src/nyancat.h
+		gcc -c src/nyancat.c src/nyancat.h -std=c99 -lz
 
-real_address.o: src/envoyer_recevoir_donnees/real_address.c src/envoyer_recevoir_donnees/real_address.h
-	gcc -c src/envoyer_recevoir_donnees/real_address.c src/envoyer_recevoir_donnees/real_address.h -std=c99 -lz
+packet_implement.o: src/packet_implement.c src/packet_implement.h
+	gcc -c src/packet_implement.c src/packet_implement.h -std=c99 -lz
 #src/receiver.h
-receiver : src/receiver.c create_socket.o real_address.o
-	gcc -o receiver src/receiver.c create_socket.o real_address.o -std=c99 -lz
+receiver : src/receiver.c nyancat.o packet_implement.o
+	gcc -o receiver src/receiver.c nyancat.o packet_implement.o -std=c99 -lz
 
-sender: src/sender.c create_socket.o real_address.o
-	gcc -o sender src/sender.c create_socket.o real_address.o -std=c99 -lz
-clean : rm -f sender receiver real_address.o create_socket.o
+sender: src/sender.c nyancat.o packet_implement.o
+	gcc -o sender src/sender.c nyancat.o packet_implement.o -std=c99 -lz
+	
+clean : rm -f sender receiver nyancat.o packet_implement.o

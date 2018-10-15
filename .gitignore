@@ -3,3 +3,4 @@ inginious/
 !Makefile
 !*.h
 !README.md
+*.gch
