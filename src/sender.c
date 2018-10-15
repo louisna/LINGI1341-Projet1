@@ -3,6 +3,8 @@
 #include <unistd.h>
 #include <sys/types.h>          /* See NOTES */
 #include <sys/socket.h>
+#include <sys/stat.h> 
+#include <fcntl.h>
 #include "nyancat.h"
 #include "packet_implement.h"
 
@@ -52,7 +54,7 @@ int main(int argc, char* argv[]){
 		fd = open(file, O_RDWR);
 		if(fd < 0){
 			fprintf(stderr, "Impossible to open the file %s. Using now stdin\n", file);
-			d = STDIN_FILENO;
+			fd = STDIN_FILENO;
 		}
 	}
 	else{
