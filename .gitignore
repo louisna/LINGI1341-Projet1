@@ -1,6 +1,7 @@
-src/
+*
 !*.c
 !Makefile
 !*.h
 !README.md
-!inginous
+!src
+!inginious
