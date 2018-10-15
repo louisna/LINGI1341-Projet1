@@ -329,8 +329,8 @@ pkt_status_code pkt_set_payload(pkt_t *pkt, const char *data, const uint16_t len
 }
 
 void print_data(pkt_t* pkt){
-	printf("type: %d\n truncated: %d\n window: %d\n length: %d\n crc1: %d\n payload: %s\n",
-		pkt->type, pkt->truncated, pkt->window, pkt->length, pkt->crc1, pkt->payload);
+	printf("type: %d\n truncated: %d\n seqnum: %d\n window: %d\n length: %d\n crc1: %d\n payload: %s\n",
+		pkt->type, pkt->truncated, pkt->seqnum, pkt->window, pkt->length, pkt->crc1, pkt->payload);
 }
 
 

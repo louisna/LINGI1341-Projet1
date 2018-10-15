@@ -13,6 +13,57 @@
 #include "packet_implement.h"
 #define MAX_READ_SIZE 1024 // need to be changed ?
 
+
+
+/*
+ * Reads the data on the fd and creates a paquet for each of the data read
+ * until the size of the list is equal to the size of the window
+ * @fd: the file descriptor where we read the data
+ * @list: the linked_list, != NULL
+ * @window: thesize of the window
+ * @new_seqnum: the number of the first seqnum for the new packet
+ *				should be +1 of the last seqnum of an existing packet
+ * @return: the number of the new new_seqnum (same interpretation)
+ */
+
+// !!!!!!!!!!!!!!!!!!!! peut-etre changer new_seqnum par le dernier numero de sequence deja utilise ?
+// !!!!!!!!!!!!!!!!!!!! et retourner aussi le dernier deja utilise ? Peut-etre plus simple pour apres
+int read_to_list(int fd, list_t* list, int window, int new_seqnum){
+	if(!list){
+		fprintf(stderr, "BIG ERROR: list NULL!\n");
+		return -1;
+	}
+	while(list->size < window){
+		char payload[MAX_PAYLOAD_SIZE]; // maybe put it before the wile loop
+		int readed = read(fd, payload, MAX_PAYLOAD_SIZE);
+		if(readed == -1){
+			fprintf(stderr, "Impossible to read data on fileIn [read_to_list]\n");
+		}
+		else{
+			pkt_t* pkt = pkt_new();
+			if(!pkt){
+				fprintf(stderr, "Impossible to create the pkt [read_to_list]\n");
+			}	
+			else{
+				int err1 = pkt_set_seqnum(pkt, new_seqnum);
+				int err2 = pkt_set_type(pkt, PTYPE_DATA);
+				int err3 = pkt_set_tr(pkt, 0);
+				int err4 = pkt_set_window(pkt, window);
+				int err5 = pkt_set_payload(pkt, payload, readed);
+				if(err1 || err2 || err3 || err4 || err5){
+					fprintf(stderr, "Error while seting the pkt\n");
+				}
+				int err = add_element_queue(list, pkt);
+				if(err){
+					fprintf(stderr, "Error while adding the packet to the queue, discarded\n");
+				}
+				new_seqnum = (new_seqnum + 1)%255; // 256 ?
+			}	
+		}
+	}
+	return new_seqnum;
+}
+
 /*
  * Function that will do the major part of the sender part
  * @sfd: the file descriptor of the socket
@@ -55,6 +106,14 @@ int process(int sfd, int fileIn){
 		else if(FD_ISSET(sfd, &check_fd)){
 
 		}
+	}
+}
+
+void print_list(list_t* list){
+	node_t* runner = list->head;
+	while(runner != NULL){
+		print_data(runner->packet);
+		runner = runner->next;
 	}
 }
 
@@ -128,6 +187,12 @@ int main(int argc, char* argv[]){
 	}
 
 	// do something
+	int seqnum = 4;
+	list_t* list = list_create();
+	int error = read_to_list(fd, list, 3, seqnum);
+	print_list(list);
+
+
 
 	close(sfd);
 
