@@ -1,6 +1,6 @@
-inginious/
+src/
 !*.c
 !Makefile
 !*.h
 !README.md
-*.gch
+!inginous
