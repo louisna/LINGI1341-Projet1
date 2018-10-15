@@ -30,19 +30,21 @@ const char * real_address(const char *address, struct sockaddr_in6 *rval);
  * @return: a file descriptor number representing the socket,
  *         or -1 in case of error (explanation will be printed on stderr)
  */
-int create_socket(struct sockaddr_in6 *source_addr, int src_port,
-                 struct sockaddr_in6 *dest_addr, int dst_port);
+int create_socket(struct sockaddr_in6 *source_addr, int src_port, struct sockaddr_in6 *dest_addr, int dst_port);
+
 
 typedef struct node{
 	pkt_t* packet;
 	struct node* next;
 } node_t;
 
+
 typedef struct linked_list{
 	node_t* head;
 	node_t* tail;
 	int size;
 } list_t;
+
 
 /*
  * Add a packet at the tail of the list and updates the size and the tail
@@ -51,4 +53,13 @@ typedef struct linked_list{
  * @return: -1 in case of error, 0 otherwise
  */
 int add_element_queue(list_t* list, pkt_t* packet);
+
+/*
+ * Remove a packet from the head of the list and updates the size and the head
+ * Return -1 if the list is empty
+ * @list: the list to be manipulated, list != NULL
+ * @packet: the packet to be removed from the head of the list
+ * @return: -1 in case of error, 0 otherwise
+ */
+int pop_element_queue(list_t* list, pkt_t* packet);
 

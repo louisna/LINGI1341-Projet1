@@ -48,3 +48,53 @@ const char * real_address(const char *address, struct sockaddr_in6 *rval){
     freeaddrinfo(result); // free the addressinfo after copying
     return NULL; // no error
 }
+
+//longueur max de queue ?
+int add_element_queue(list_t* list, pkt_t* packet){
+
+    node_t * new_node = (node_t*) malloc(sizeof(node_t));
+    if(new_node==NULL){
+        return -1;
+    }
+    
+    new_node->packet = packet;
+    new_node->next = NULL;
+    
+    if(list->size==0){//liste vide
+        list->head = new_node;
+        list->tail = new_node;
+        list->size++;
+        return 0;
+    }
+    else{//liste pas vide
+        node_t * tail = list->tail;
+        tail->next = new_node;
+        list->tail = new_node;
+        list->size++;
+        return 0;
+    }
+}
+
+
+int pop_element_queue(list_t* list, pkt_t* packet){
+    if(list->size==0){
+        return -1;
+    }
+    else{
+        node_t * head = list->head;
+        packet = head->packet;
+
+        if(list->size==1){
+            list->head = NULL;
+            list->tail = NULL;
+            list->size--;
+        }
+        else{
+
+            list->head = list->head->next;
+            list->size--;
+        }
+        free(head);
+        return 0;
+    }
+}
