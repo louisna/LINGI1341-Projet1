@@ -1,12 +1,62 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <sys/types.h>          /* See NOTES */
+#include <sys/types.h>        /* See NOTES */
 #include <sys/socket.h>
+#include <netdb.h>
+#include <netinet/in.h>
 #include <sys/stat.h> 
+#include <sys/select.h>
+#include <sys/time.h>
 #include <fcntl.h>
 #include "nyancat.h"
 #include "packet_implement.h"
+#define MAX_READ_SIZE 1024 // need to be changed ?
+
+/*
+ * Function that will do the major part of the sender part
+ * @sfd: the file descriptor of the socket
+ * @fileIn: the file desctriptor from where we take data
+ * @return: -1 in case of error, 0 otherwize
+ */
+int process(int sfd, int fileIn){
+	fd_set check_fd; // for the function select()
+	int retval; // return value of select
+	int readed; // count the number of bytes read by read/receve
+
+	char buffer[MAX_READ_SIZE];
+
+	// check the maximum fd, may be fileIn ?
+	int max_fd = sfd > fileIn ? sfd : fileIn;
+
+	while(1){
+
+		/*
+		Quand faisons nous la verification des segments deja envoyes?
+		C'est-a-dire leur ACK pour voir si on peut les retirer de la liste
+
+		A quel moment decidonc-nous d'envoyer les packets deja dans la liste ?
+		Ici (avant le select) ou apres tout ? ou dans les else if ?
+		*/
+
+		FD_ZERO(&check_fd);
+		FD_SET(sfd, &check_fd);
+		FD_SET(fileIn, &check_fd);
+
+		retval = select(max_fd+1, &check_fd, NULL, NULL, 0); // add time for timeout
+		if(retval == -1){
+			fprintf(stderr, "Error from select");
+			return -1; // vraiment ?
+		}
+
+		else if(FD_ISSET(fileIn, &check_fd)){
+			// Read from fileIn, create packet, 
+		}
+		else if(FD_ISSET(sfd, &check_fd)){
+
+		}
+	}
+}
 
 int main(int argc, char* argv[]){
 

@@ -9,7 +9,7 @@ int create_socket(struct sockaddr_in6 *source_addr, int src_port, struct sockadd
     }
 
     if(source_addr != NULL){
-        source_addr->sin6_port = htons(src_port); // why htons ?
+        source_addr->sin6_port = htons(src_port);
         int error = bind(fd_s, (struct sockaddr*) source_addr, sizeof(struct sockaddr_in6));
         if(error == -1){
             fprintf(stderr, "bind returned -1 \n");
@@ -18,7 +18,7 @@ int create_socket(struct sockaddr_in6 *source_addr, int src_port, struct sockadd
     }
 
     if(dest_addr != NULL){
-        dest_addr->sin6_port = htons(dst_port); // why htons ?
+        dest_addr->sin6_port = htons(dst_port);
         int error = connect(fd_s, (struct sockaddr*) dest_addr, sizeof(struct sockaddr_in6));
         if(error == -1){
             fprintf(stderr, "connect returned -1\n");
@@ -49,11 +49,21 @@ const char * real_address(const char *address, struct sockaddr_in6 *rval){
     return NULL; // no error
 }
 
+list_t* list_create(){
+    list_t* list = (list_t*)calloc(1, sizeof(list_t));
+    if(!list){
+        fprintf(stderr, "Not enough memory [list_create]\n");
+        return NULL;
+    }
+    return list;
+}
+
 //longueur max de queue ?
 int add_element_queue(list_t* list, pkt_t* packet){
 
     node_t * new_node = (node_t*) malloc(sizeof(node_t));
     if(new_node==NULL){
+        fprintf(stderr, "Not enough memory [add element queue]\n");
         return -1;
     }
     
@@ -78,6 +88,7 @@ int add_element_queue(list_t* list, pkt_t* packet){
 
 int pop_element_queue(list_t* list, pkt_t* packet){
     if(list->size==0){
+        fprintf(stderr, "Empty list [pop element queue]\n");
         return -1;
     }
     else{
@@ -90,7 +101,6 @@ int pop_element_queue(list_t* list, pkt_t* packet){
             list->size--;
         }
         else{
-
             list->head = list->head->next;
             list->size--;
         }

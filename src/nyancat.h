@@ -32,7 +32,6 @@ const char * real_address(const char *address, struct sockaddr_in6 *rval);
  */
 int create_socket(struct sockaddr_in6 *source_addr, int src_port, struct sockaddr_in6 *dest_addr, int dst_port);
 
-
 typedef struct node{
 	pkt_t* packet;
 	struct node* next;
@@ -45,6 +44,11 @@ typedef struct linked_list{
 	int size;
 } list_t;
 
+/*
+ * Creates a linked_list and initialize everything to O/NULL;
+ * @return: the new linked_list, or NULL in case of error
+ */
+list_t* list_create();
 
 /*
  * Add a packet at the tail of the list and updates the size and the tail

@@ -1,6 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <sys/types.h>          /* See NOTES */
+#include <sys/socket.h>
+#include <sys/stat.h> 
+#include <fcntl.h>
 #include "nyancat.h"
 #include "packet_implement.h"
 

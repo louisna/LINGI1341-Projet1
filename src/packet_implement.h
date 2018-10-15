@@ -121,4 +121,10 @@ pkt_status_code pkt_set_payload(pkt_t*,
  */
 pkt_status_code pkt_set_crc2(pkt_t*, const uint32_t crc2);
 
+/*
+ * Prints the data of the packet pkt on stdin
+ * @pre: pkt != NULL
+ */
+void print_data(pkt_t* pkt);
+
 #endif  /* __PACKET_INTERFACE_H_ */
