@@ -332,12 +332,15 @@ int main(int argc, char* argv[]){
 	// tests
 
 	// do something
-	/*
+	
 	int seqnum = 254;
 	list_t* list = list_create();
-	int error = read_to_list(fd, list, 3, seqnum);
+	int error = read_to_list(fd, list, 5, seqnum, sfd);
 	print_list(list);
-	*/
+	pkt_t* pkt_test;
+	pop_element_queue(list, pkt_test);
+	print_list(list);
+	
 
 
 
