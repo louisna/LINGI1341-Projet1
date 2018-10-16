@@ -14,6 +14,7 @@
 #include "packet_implement.h"
 #define MAX_READ_SIZE 1024 // need to be changed ?
 #define RETRANSMISSION_TIMER 2 // pour l'instant
+#define MAX_WINDOW_SIZE 31;
 
 
 /*
@@ -231,7 +232,7 @@ int read_to_list(int fd, list_t* list, int window, int new_seqnum, int sfd, int 
 				int err1 = 0;
 				int err2 = pkt_set_type(pkt, PTYPE_DATA);
 				int err3 = pkt_set_tr(pkt, 0);
-				int err4 = pkt_set_window(pkt, window);
+				int err4 = pkt_set_window(pkt, MAX_WINDOW_SIZE - list->list - 1);
 				int err5 = 0;
 				if(readed > 0){
 					err1 = pkt_set_seqnum(pkt, new_seqnum);
