@@ -7,11 +7,50 @@
 #include <netinet/in.h>
 #include <sys/stat.h> 
 #include <sys/select.h>
+#include <time.h>
 #include <sys/time.h>
 #include <fcntl.h>
 #include "nyancat.h"
 #include "packet_implement.h"
 #define MAX_READ_SIZE 1024 // need to be changed ?
+
+
+/*
+ * Function that will send a packet to the socket
+ * @pkt: the adress of the packet to be sent
+ * @sfd: the socket file descriptor
+ * @return: -1 in case of error, 0 otherwise
+ */
+int send_packet(pkt_t* pkt, int sfd){
+	time_t current_time = time(NULL);	
+	uint32_t  a_lo = (uint32_t) current_time;
+
+	pkt_status_code err1 = pkt_set_timestamp(pkt, a_lo);
+	if(err1!=PKT_OK){
+		fprintf(stderr, "Error while encoding time in packet : error is %d\n",err1);
+		return -1;
+	}
+
+	char buf;
+	size_t length = 3*sizeof(uint32_t);
+	if(pkt_get_length(pkt)!=0){
+		length += pkt_get_length(pkt);
+		length += sizeof(uint32_t);
+	}
+				
+	pkt_status_code err2 = pkt_encode(pkt, &buf, &length);
+	if(err2!=PKT_OK){
+		fprintf(stderr, "Error while using pkt_encode : error is %d\n",err2);
+		return -1;
+	}
+
+	ssize_t err3 = send( sfd, &buf, length,0);
+	if(err3==-1){
+		fprintf(stderr, "Error while sending packet\n");
+		return -1;
+	}
+	return 0;
+}
 
 
 
@@ -28,7 +67,7 @@
 
 // !!!!!!!!!!!!!!!!!!!! peut-etre changer new_seqnum par le dernier numero de sequence deja utilise ?
 // !!!!!!!!!!!!!!!!!!!! et retourner aussi le dernier deja utilise ? Peut-etre plus simple pour apres
-int read_to_list(int fd, list_t* list, int window, int new_seqnum){
+int read_to_list(int fd, list_t* list, int window, int new_seqnum, int sfd ){
 	if(!list){
 		fprintf(stderr, "BIG ERROR: list NULL!\n");
 		return -1;
@@ -53,6 +92,14 @@ int read_to_list(int fd, list_t* list, int window, int new_seqnum){
 				if(err1 || err2 || err3 || err4 || err5){
 					fprintf(stderr, "Error while seting the pkt\n");
 				}
+
+				//On envoie le packet
+				int err6 = send_packet(pkt,sfd);
+				if(err6){
+					fprintf(stderr, "Error while sending the packet for the first time\n");
+				}
+
+				//On l'ajoute à la window
 				int err = add_element_queue(list, pkt);
 				if(err){
 					fprintf(stderr, "Error while adding the packet to the queue, discarded\n");
@@ -64,6 +111,8 @@ int read_to_list(int fd, list_t* list, int window, int new_seqnum){
 	return new_seqnum;
 }
 
+
+
 /*
  * Function that will do the major part of the sender part
  * @sfd: the file descriptor of the socket
@@ -73,41 +122,40 @@ int read_to_list(int fd, list_t* list, int window, int new_seqnum){
 int process(int sfd, int fileIn){
 	fd_set check_fd; // for the function select()
 	int retval; // return value of select
-	int readed; // count the number of bytes read by read/receve
-
-	char buffer[MAX_READ_SIZE];
+	list_t* list = list_create();
+	int seqnum = 0;
 
 	// check the maximum fd, may be fileIn ?
 	int max_fd = sfd > fileIn ? sfd : fileIn;
 
 	while(1){
 
-		/*
-		Quand faisons nous la verification des segments deja envoyes?
-		C'est-a-dire leur ACK pour voir si on peut les retirer de la liste
-
-		A quel moment decidonc-nous d'envoyer les packets deja dans la liste ?
-		Ici (avant le select) ou apres tout ? ou dans les else if ?
-		*/
-
 		FD_ZERO(&check_fd);
 		FD_SET(sfd, &check_fd);
 		FD_SET(fileIn, &check_fd);
 
-		retval = select(max_fd+1, &check_fd, NULL, NULL, 0); // add time for timeout
+		retval = select(max_fd+1, &check_fd, NULL, NULL, 0);
+
 		if(retval == -1){
 			fprintf(stderr, "Error from select");
 			return -1; // vraiment ?
 		}
 
 		else if(FD_ISSET(fileIn, &check_fd)){
-			// Read from fileIn, create packet, 
+			//seqnum = read_to_list(fileIn, list, int window, seqnum, sfd ){
+			// Read from fileIn, create packet,
+			// reprendre le time
+			//pas oublier de stopper le renvoi de timeout à la fin de la window size
 		}
 		else if(FD_ISSET(sfd, &check_fd)){
 
 		}
+		//check timeout
+		
+
 	}
 }
+
 
 void print_list(list_t* list){
 	node_t* runner = list->head;
@@ -185,6 +233,8 @@ int main(int argc, char* argv[]){
 		fprintf(stderr, "Failed to create the socket\n");
 		exit(EXIT_FAILURE);
 	}
+
+	// tests
 
 	// do something
 	int seqnum = 254;
