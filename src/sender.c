@@ -40,13 +40,13 @@ int send_packet(pkt_t* pkt, int sfd){
 	}
 
 	char buff[length];				
-	pkt_status_code err2 = pkt_encode(pkt, &buff, &length);
+	pkt_status_code err2 = pkt_encode(pkt, buff, &length);
 	if(err2!=PKT_OK){
 		fprintf(stderr, "Error while using pkt_encode : error is %d\n",err2);
 		return -1;
 	}
 
-	ssize_t err3 = send( sfd, &buff, length,0);
+	ssize_t err3 = send( sfd, buff, length,0);
 	if(err3==-1){
 		fprintf(stderr, "Error while sending packet\n");
 		return -1;
@@ -283,6 +283,10 @@ int process_sender(int sfd, int fileIn){
 	int retval; // return value of select
 	list_t* list = list_create();
 	int seqnum = 0;
+	int window = 1;
+	struct timeval tv;
+	tv.tv_sec = 1;
+	tv.tv_usec = 0;
 
 	// check the maximum fd, may be fileIn ?
 	int max_fd = sfd > fileIn ? sfd : fileIn;
@@ -293,7 +297,7 @@ int process_sender(int sfd, int fileIn){
 		FD_SET(sfd, &check_fd);
 		FD_SET(fileIn, &check_fd);
 
-		retval = select(max_fd+1, &check_fd, NULL, NULL, 0);
+		retval = select(max_fd+1, &check_fd, NULL, NULL, &tv);
 
 		if(retval == -1){
 			fprintf(stderr, "Error from select [process_sender]");
@@ -301,13 +305,14 @@ int process_sender(int sfd, int fileIn){
 		}
 
 		else if(FD_ISSET(sfd, &check_fd)){
-			
+			check_ack(sfd, list, seqnum, &window);
 		}
 		else if(FD_ISSET(fileIn, &check_fd)){
 			//seqnum = read_to_list(fileIn, list, int window, seqnum, sfd ){
 			// Read from fileIn, create packet,
 			// reprendre le time
 			//pas oublier de stopper le renvoi de timeout à la fin de la window size
+			seqnum = read_to_list(fileIn, list, window, seqnum, sfd, seqnum);
 		}
 		//check timeout
 		
@@ -398,16 +403,7 @@ int main(int argc, char* argv[]){
 	// tests
 
 	// do something
-	
-	int seqnum = 254;
-	list_t* list = list_create();
-	int error = read_to_list(fd, list, 5, seqnum, sfd, 250);
-	print_list(list);
-	pkt_t* pkt_test;
-	pop_element_queue(list, pkt_test);
-	print_list(list);
-	
-
+	process_sender(fd, sfd);
 
 
 	close(sfd);

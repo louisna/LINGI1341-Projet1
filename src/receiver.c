@@ -217,6 +217,10 @@ int process_receiver(int sfd, int fileOut){
 	list_t* list = list_create();
 	int seqnum = 0;
 	int current_window = 1;
+	struct timeval tv;
+	tv.tv_sec = 1;
+	tv.tv_usec = 0;
+
 	if(!list){
 		fprintf(stderr, "Not enough memory to create the list. Fatal error.\n");
 		exit(EXIT_FAILURE);
@@ -225,18 +229,12 @@ int process_receiver(int sfd, int fileOut){
 	// check the maximum fd, may be fileOut ?
 	int max_fd = sfd > fileOut ? sfd : fileOut;
 
-	int errWait = wait_for_client(sfd);
-	if(errWait){
-		fprintf(stderr, "Error wait_for_client\n");
-		return -1;
-	}
-
 	while(1){
 
 		FD_ZERO(&check_fd);
 		FD_SET(sfd, &check_fd);
 
-		retval = select(max_fd+1, &check_fd, NULL, NULL, 0);
+		retval = select(max_fd+1, &check_fd, NULL, NULL, &tv);
 
 		if(retval == -1){
 			fprintf(stderr, "Error from select [process_receiver]\n");
@@ -339,6 +337,12 @@ int main(int argc, char* argv[]){
 	}
 
 	// do something
+	int errWait = wait_for_client(sfd);
+	if(errWait < 0){
+		fprintf(stderr, "Error wait_for_client\n");
+		return -1;
+	}
+	process_receiver(fd, sfd);
 
 	close(sfd);
 
