@@ -8,6 +8,53 @@
 #include "nyancat.h"
 #include "packet_implement.h"
 
+
+int read_to_list(int fd, list_t* list, int window, int new_seqnum, int sfd){
+	return 0;
+}
+
+int process_receiver(int sfd, int fileOut){
+	fd_set check_fd; // for the function select()
+	int retval; // return value of select
+	list_t* list = list_create();
+	int seqnum = 0;
+
+	// check the maximum fd, may be fileOut ?
+	int max_fd = sfd > fileOut ? sfd : fileOut;
+
+	while(1){
+
+		FD_ZERO(&check_fd);
+		FD_SET(sfd, &check_fd);
+
+		retval = select(max_fd+1, &check_fd, NULL, NULL, 0);
+
+		if(retval == -1){
+			fprintf(stderr, "Error from select [process_receiver]\n");
+			return -1; // vraiment ?
+		}
+
+		else if(FD_ISSET(sfd, &check_fd)){
+			// read from sfd
+			// check if in sequence
+			// if out of sequence, stock in list
+			//	and return the last ack
+			// truncated ?
+			// if packet length 0 + sequence number already done
+		}
+	}
+
+	return 0;
+}
+
+void print_list(list_t* list){
+	node_t* runner = list->head;
+	while(runner != NULL){
+		print_data(runner->packet);
+		runner = runner->next;
+	}
+}
+
 int main(int argc, char* argv[]){
 
 	/* default values */
@@ -55,11 +102,11 @@ int main(int argc, char* argv[]){
 		fd = open(file, O_RDWR);
 		if(fd < 0){
 			fprintf(stderr, "Impossible to open the file %s. Using now stdin\n", file);
-			d = STDIN_FILENO;
+			d = STDOUT_FILENO;
 		}
 	}
 	else{
-		fd = STDIN_FILENO;
+		fd = STDOUT_FILENO;
 	}
 
 	/* Resolve the hostname */

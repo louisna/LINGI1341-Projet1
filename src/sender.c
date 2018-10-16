@@ -81,6 +81,17 @@ int packet_checked(list_t* list, int seqnum_ack){
 
 }
 
+int check_seqnum(list_t* list, int seqnum){
+	node_t* runner = list->head;
+	while(runner != NULL){
+		pkt_t* pkt = runner->packet;
+		if(pkt_get_seqnum(pkt) == seqnum)
+			return 1;
+		runner = runner->next;
+	}
+	return 0;
+}
+
 /*
  * Check the ack-packet receved from sfd, and delete from list all
  * the packets with a seqnum below the seqnum of the ack
@@ -113,11 +124,17 @@ int check_ack(int sfd, list_t* list, int last_seqnum, int* window){
             fprintf(stderr, "Not enough memory while creating a new pkt [check_ack]\n");
         }
         else{
-            pkt_decode(buffer, readed, pkt);
-            *window = pkt_get_window(pkt);
+            int err = pkt_decode(buffer, readed, pkt);
+            if(err){
+            	fprintf(stderr, "Impossible to decode teh package [check_ack]\n");
+            	return -1;
+            }
+            *window = pkt_get_window(pkt);`
+            if(*window == 0)
+            	*window = 1;
             int seqnum_ack = pkt_get_seqnum(pkt);
 
-            if(seqnum_ack < first_seqnum || seqnum_ack > last_seqnum){
+            if(!check_seqnum(list, seqnum_ack)){
                 fprintf(stderr, "seqnum_ack out of bounds [check_ack]\n");
                 pkt_del(pkt);
                 return 0; // just ack out of bounds, but not an error
@@ -147,16 +164,18 @@ int check_ack(int sfd, list_t* list, int last_seqnum, int* window){
     return 0;
 }
 
-int check_timeout(list_t* list, int sfd){
+int check_timeout(list_t* list, int sfd, int window){
 	time_t current_time = time(NULL);	
 	uint32_t  a_lo = (uint32_t) current_time;
+	int count = 0;
 
 	node_t* runner = list->head;
-	while(runner != NULL){
+	while(runner != NULL && count < window){
 		pkt_t* packet = runner->packet;
 		uint32_t time_sent = pkt_get_timestamp(packet);
 		if(a_lo - time_sent >= RETRANSMISSION_TIMER){
 			int err = send_packet(packet, sfd);
+			count++;
 			if(err){
 				fprintf(stderr, "Impossible to send again the packet [check_timeout]\n");
 			}
@@ -177,11 +196,12 @@ int check_timeout(list_t* list, int sfd){
  * @new_seqnum: the number of the first seqnum for the new packet
  *				should be +1 of the last seqnum of an existing packet
  * @return: the number of the new new_seqnum (same interpretation)
+ * 			or -2 if EOF reached
  */
 
 // !!!!!!!!!!!!!!!!!!!! peut-etre changer new_seqnum par le dernier numero de sequence deja utilise ?
 // !!!!!!!!!!!!!!!!!!!! et retourner aussi le dernier deja utilise ? Peut-etre plus simple pour apres
-int read_to_list(int fd, list_t* list, int window, int new_seqnum, int sfd ){
+int read_to_list(int fd, list_t* list, int window, int new_seqnum, int sfd, int last_ack_seqnum){
 	if(!list){
 		fprintf(stderr, "BIG ERROR: list NULL!\n");
 		return -1;
@@ -198,25 +218,39 @@ int read_to_list(int fd, list_t* list, int window, int new_seqnum, int sfd ){
 				fprintf(stderr, "Impossible to create the pkt [read_to_list]\n");
 			}	
 			else{
-				int err1 = pkt_set_seqnum(pkt, new_seqnum);
+				int err1 = 0;
 				int err2 = pkt_set_type(pkt, PTYPE_DATA);
 				int err3 = pkt_set_tr(pkt, 0);
 				int err4 = pkt_set_window(pkt, window);
-				int err5 = pkt_set_payload(pkt, payload, readed);
+				int err5 = 0;
+				if(readed > 0){
+					err1 = pkt_set_seqnum(pkt, new_seqnum);
+					err5 = pkt_set_payload(pkt, payload, readed);
+				}
+				else{
+					err1 = pkt_set_seqnum(pkt, last_ack_seqnum);
+					err5 = pkt_set_payload(pkt, NULL, 0);
+				}
 				if(err1 || err2 || err3 || err4 || err5){
 					fprintf(stderr, "Error while seting the pkt\n");
 				}
 
 				//On envoie le packet
+				/*
 				int err6 = send_packet(pkt,sfd);
 				if(err6){
 					fprintf(stderr, "Error while sending the packet for the first time\n");
 				}
+				*/
 
 				//On l'ajoute à la window
 				int err = add_element_queue(list, pkt);
 				if(err){
 					fprintf(stderr, "Error while adding the packet to the queue, discarded\n");
+				}
+				if(readed == 0){
+					fprintf(stderr, "EOF reached, end.\n");
+					return -2;
 				}
 				new_seqnum = (new_seqnum + 1)%256; // 256 ?
 			}	
@@ -233,7 +267,7 @@ int read_to_list(int fd, list_t* list, int window, int new_seqnum, int sfd ){
  * @fileIn: the file desctriptor from where we take data
  * @return: -1 in case of error, 0 otherwize
  */
-int process(int sfd, int fileIn){
+int process_sender(int sfd, int fileIn){
 	fd_set check_fd; // for the function select()
 	int retval; // return value of select
 	list_t* list = list_create();
@@ -251,7 +285,7 @@ int process(int sfd, int fileIn){
 		retval = select(max_fd+1, &check_fd, NULL, NULL, 0);
 
 		if(retval == -1){
-			fprintf(stderr, "Error from select");
+			fprintf(stderr, "Error from select [process_sender]");
 			return -1; // vraiment ?
 		}
 
@@ -268,6 +302,8 @@ int process(int sfd, int fileIn){
 		
 
 	}
+
+	return 0;
 }
 
 
@@ -354,7 +390,7 @@ int main(int argc, char* argv[]){
 	
 	int seqnum = 254;
 	list_t* list = list_create();
-	int error = read_to_list(fd, list, 5, seqnum, sfd);
+	int error = read_to_list(fd, list, 5, seqnum, sfd, 250);
 	print_list(list);
 	pkt_t* pkt_test;
 	pop_element_queue(list, pkt_test);
