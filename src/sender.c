@@ -13,6 +13,7 @@
 #include "nyancat.h"
 #include "packet_implement.h"
 #define MAX_READ_SIZE 1024 // need to be changed ?
+#define RETRANSMISSION_TIMER 2 // pour l'instant
 
 
 /*
@@ -146,6 +147,24 @@ int check_ack(int sfd, list_t* list, int last_seqnum, int* window){
     return 0;
 }
 
+int check_timeout(list_t* list, int sfd){
+	time_t current_time = time(NULL);	
+	uint32_t  a_lo = (uint32_t) current_time;
+
+	node_t* runner = list->head;
+	while(runner != NULL){
+		pkt_t* packet = runner->packet;
+		uint32_t time_sent = pkt_get_timestamp(packet);
+		if(current_time - time_sent >= RETRANSMISSION_TIMER){
+			int err = send_packet(packet, sfd);
+			if(err){
+				fprintf(stderr, "Impossible to send again the packet [check_timeout]\n");
+			}
+		}
+		runner = runner->next;
+	}
+	return 0;
+}
 
 
 
