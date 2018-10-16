@@ -15,6 +15,12 @@
 
 #define MAX_READ_SIZE 1024 // need to be changed ?
 
+/*
+ * Sends the packet pkt to be an ack
+ * @pkt: the packet to be sent
+ * @sfd: the socket file descriptor
+ * @return 0 in case of success, 0 otherwise
+ */
 int send_ack(pkt_t* pkt, int sfd){
 	time_t current_time = time(NULL);	
 	uint32_t  a_lo = (uint32_t) current_time;
@@ -47,6 +53,10 @@ int send_ack(pkt_t* pkt, int sfd){
 	return 0;
 }
 
+/*
+ * Computes an ack with a seqnum, a type and a window
+ * @return: the new pkt, NULL in case of error
+ */
 pkt_t* create_ack(int seqnum, int type, int new_window){
 	pkt_t* new = pkt_new();
 	if(!new){
@@ -59,7 +69,14 @@ pkt_t* create_ack(int seqnum, int type, int new_window){
 	return new;
 
 }
-
+/*
+ * Givent list and first_seqnum, checks and create an ack for
+ * each paket with a consecutive seqnum
+ * @list: the list
+ * @first_seqnum: the first seqnum of the ack
+ * @sfd: the socket file descriptor
+ * @return the seqnum of the last ack sent
+ */
 int check_for_ack(list_t* list, int first_seqnum, int sfd){
 	node_t* runner = list->head;
 	pkt_t* pkt = runner->packet;
@@ -97,6 +114,11 @@ int check_for_ack(list_t* list, int first_seqnum, int sfd){
 	return first_seqnum;
 }
 
+/*
+ * Free all the packets/nodes with a seqnum below the seqnum
+ * @list: the list
+ * @seqnum: the seqnum of the last ack (which must be keeped)
+ */
 void free_packet_queue(list_t* list, int seqnum){
 	node_t* runner = list->head;
 	while(runner != NULL){
@@ -114,8 +136,13 @@ void free_packet_queue(list_t* list, int seqnum){
 	}
 }
 
-
-
+/*
+ * Reads data from the sfd, and add the packets to the list
+ * @list: the list
+ * @window: a pointer to update the window size
+ * @seqnum: the seqnum of the first packet waited
+ * @return: -1 in case of error, -2 if the transfer is done, -1 otherwise
+ */
 int read_to_list_r(list_t* list, int *window, int seqnum, int sfd){
 	if(!list){
 		fprintf(stderr, "BIG ERROR: list NULL!\n");
@@ -137,6 +164,11 @@ int read_to_list_r(list_t* list, int *window, int seqnum, int sfd){
 				if(err){
 					fprintf(stderr, "Impossible to decode [read___r]\n");
 				}
+
+				if(seqnum == pkt_get_seqnum(pkt) && pkt_get_length(pkt) == 0){
+					//end
+					return -2;
+				}
 				*window = pkt_get_window(pkt);
 				int seqnum_interval_max = (seqnum + *window) % 256;
 				if(seqnum_interval_max > pkt_get_seqnum(pkt)){ // A CHANGER !!! PREND PAS EN COMPTE LE MODULO
@@ -146,8 +178,15 @@ int read_to_list_r(list_t* list, int *window, int seqnum, int sfd){
 			}
 		}
 	}
+	return 0;
 }
-
+/* Block the caller until a message is received on sfd,
+ * and connect the socket to the source addresse of the received message.
+ * @sfd: a file descriptor to a bound socket but not yet connected
+ * @return: 0 in case of success, -1 otherwise
+ * @POST: This call is idempotent, it does not 'consume' the data of the message,
+ * and could be repeated several times blocking only at the first call.
+ */
 int wait_for_client(int sfd){
     char buffer[1024];
     
@@ -169,6 +208,9 @@ int wait_for_client(int sfd){
     return 0;
 }
 
+/*
+ * Global process
+ */
 int process_receiver(int sfd, int fileOut){
 	fd_set check_fd; // for the function select()
 	int retval; // return value of select
