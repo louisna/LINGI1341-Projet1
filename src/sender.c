@@ -155,7 +155,7 @@ int check_timeout(list_t* list, int sfd){
 	while(runner != NULL){
 		pkt_t* packet = runner->packet;
 		uint32_t time_sent = pkt_get_timestamp(packet);
-		if(current_time - time_sent >= RETRANSMISSION_TIMER){
+		if(a_lo - time_sent >= RETRANSMISSION_TIMER){
 			int err = send_packet(packet, sfd);
 			if(err){
 				fprintf(stderr, "Impossible to send again the packet [check_timeout]\n");
