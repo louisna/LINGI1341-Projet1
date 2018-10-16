@@ -92,6 +92,20 @@ int check_seqnum(list_t* list, int seqnum){
 	return 0;
 }
 
+void send_specific_pkt(int sfd, list_t* list, int seqnum){
+	node_t* runner = list->head;
+	while(runner != NULL){
+		pkt_t* packet = runner->packet;
+		if(seqnum == pkt_get_seqnum(pkt)){
+			int err = send_packet(packet, sfd);
+			if(err){
+				fprintf(stderr, "Packet with NACK cannot be sent\n");
+			}
+		}
+	}
+	fprintf(stderr, "[send_specific_pkt] Cannot find the packet\n");
+}
+
 /*
  * Check the ack-packet receved from sfd, and delete from list all
  * the packets with a seqnum below the seqnum of the ack
@@ -145,11 +159,7 @@ int check_ack(int sfd, list_t* list, int last_seqnum, int* window){
                 int err = packet_checked(list, seqnum_ack);
             }
             else if(pkt_get_type(pkt) == PTYPE_NACK){ // devoir juste retirer l'element specifique ?
-                int err = pop_specific_element_queue(list, pkt_get_seqnum(pkt));
-                if(err){
-                    fprintf(stderr, "Error after [pop_specific_element_queue]\n");
-                    return -1;
-                }
+                
             }
             else{
                 fprintf(stderr, "Wrong type of ack packet [check_ack]\n");
