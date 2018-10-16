@@ -1,16 +1,172 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <sys/types.h>          /* See NOTES */
+#include <sys/types.h>        /* See NOTES */
 #include <sys/socket.h>
+#include <netdb.h>
+#include <netinet/in.h>
 #include <sys/stat.h> 
+#include <sys/select.h>
+#include <time.h>
+#include <sys/time.h>
 #include <fcntl.h>
 #include "nyancat.h"
 #include "packet_implement.h"
 
+#define MAX_READ_SIZE 1024 // need to be changed ?
 
-int read_to_list(int fd, list_t* list, int window, int new_seqnum, int sfd){
+int send_ack(pkt_t* pkt, int sfd){
+	time_t current_time = time(NULL);	
+	uint32_t  a_lo = (uint32_t) current_time;
+
+	pkt_status_code err1 = pkt_set_timestamp(pkt, a_lo);
+	if(err1!=PKT_OK){
+		fprintf(stderr, "Error while encoding time in packet : error is %d\n",err1);
+		return -1;
+	}
+
+	size_t length = 3*sizeof(uint32_t);
+	// length should be 0
+	if(pkt_get_length(pkt)!=0){
+		length += pkt_get_length(pkt);
+		length += sizeof(uint32_t);
+	}
+	char buff[length];
+				
+	pkt_status_code err2 = pkt_encode(pkt, &buff, &length);
+	if(err2!=PKT_OK){
+		fprintf(stderr, "Error while using pkt_encode : error is %d\n",err2);
+		return -1;
+	}
+
+	ssize_t err3 = send(sfd, &buff, length,0);
+	if(err3==-1){
+		fprintf(stderr, "Error while sending packet\n");
+		return -1;
+	}
 	return 0;
+}
+
+pkt_t* create_ack(int seqnum, int type, int new_window){
+	pkt_t* new = pkt_new();
+	if(!new){
+		return NULL;
+	}
+	pkt_set_type(new, type);
+	pkt_set_seqnum(new, seqnum);
+	pkt_set_payload(new, NULL, 0);
+	pkt_set_window(new, new_window);
+	return new;
+
+}
+
+int check_for_ack(list_t* list, int first_seqnum, int sfd){
+	node_t* runner = list->head;
+	pkt_t* pkt = runner->packet;
+	int previous = pkt_get_seqnum(pkt);
+	if(previous > first_seqnum){ // or first_seqnum + 1 ?
+		fprintf(stderr, "We lost the good ack... problem\n");
+		return 0; // we still have to wait for the last ack
+	}
+	while(runner != NULL){
+		pkt_t* pkt = runner->packet;
+		int actual = pkt_get_seqnum(pkt);
+		if((actual == 0 && previous == 255) || actual - first_seqnum <= 1){
+			// seqnum of the pkt is the extactly next of the previous
+			// we can send an ack for this pkt
+			pkt_t* ack;
+			int new_window = MAX_WINDOW_SIZE - list->size;
+			if(pkt_get_tr(pkt)){
+				ack = create_ack(actual, PTYPE_NACK, new_window);
+			}
+			else{
+				ack = create_ack(actual, PTYPE_ACK, new_window);
+			}
+			int err = send_ack(pkt, sfd);
+			if(err){
+				fprintf(stderr, "Impossible to send the ack %d\n", pkt_get_seqnum(pkt));
+			}
+			pkt_del(ack);
+			runner = runner->next;
+			first_seqnum++;
+		}
+		else{
+			return first_seqnum;
+		}
+	}
+	return first_seqnum;
+}
+
+void free_packet_queue(list_t* list, int seqnum){
+	node_t* runner = list->head;
+	while(runner != NULL){
+		pkt_t* pkt = runner->packet;
+		int seq = pkt_get_seqnum(pkt);
+		if(seq >= seqnum){
+			return;
+		}
+		pkt_t* pkt2;
+		int err = pop_element_queue(list, pkt2);
+		if(err){
+			fprintf(stderr, "Erreur [free_packet_queue]\n");
+		}
+		pkt_del(pkt2);
+	}
+}
+
+
+
+int read_to_list_r(list_t* list, int *window, int seqnum, int sfd){
+	if(!list){
+		fprintf(stderr, "BIG ERROR: list NULL!\n");
+		return -1;
+	}
+	while(list->size < window){
+		char buffer[MAX_PAYLOAD_SIZE];
+		int readed = recv(sfd, buffer, MAX_READ_SIZE, 0);
+		if(readed == -1){
+			fprintf(stderr, "Error while receving data [read_to_list_r]\n");
+		}
+		else{
+			pkt_t* pkt = pkt_new();
+			if(!pkt){
+				fprintf(stderr, "Not enough memory while creation a packet [read_to_list_t]\n");
+			}
+			else{
+				int err = pkt_decode(buffer, readed, pkt);
+				if(err){
+					fprintf(stderr, "Impossible to decode [read___r]\n");
+				}
+				*window = pkt_get_window(pkt);
+				int seqnum_interval_max = (seqnum + *window) % 256;
+				if(seqnum_interval_max > pkt_get_seqnum(pkt)){ // A CHANGER !!! PREND PAS EN COMPTE LE MODULO
+					// peut etre ajoute
+					add_specific_queue(list, pkt);
+				}
+			}
+		}
+	}
+}
+
+int wait_for_client(int sfd){
+    char buffer[1024];
+    
+    struct sockaddr_in6 sock;
+    socklen_t len = sizeof(sock);
+
+    int nread = recvfrom(sfd, buffer, sizeof(char)*1024, MSG_PEEK, (struct sockaddr*) &sock, &len);
+    if(nread == -1){
+        fprintf(stderr, "Error using recvfrom\n");
+        return -1;
+    }
+
+    int done = connect(sfd, (struct sockaddr*) &sock, (int) len);
+    if(done == -1){
+        fprintf(stderr, "Error using connect");
+        return -1;
+    }
+
+    return 0;
 }
 
 int process_receiver(int sfd, int fileOut){
@@ -18,9 +174,20 @@ int process_receiver(int sfd, int fileOut){
 	int retval; // return value of select
 	list_t* list = list_create();
 	int seqnum = 0;
+	int current_window = 1;
+	if(!list){
+		fprintf(stderr, "Not enough memory to create the list. Fatal error.\n");
+		exit(EXIT_FAILURE);
+	}
 
 	// check the maximum fd, may be fileOut ?
 	int max_fd = sfd > fileOut ? sfd : fileOut;
+
+	int errWait = wait_for_client(sfd);
+	if(errWait){
+		fprintf(stderr, "Error wait_for_client\n");
+		return -1;
+	}
 
 	while(1){
 
@@ -41,7 +208,11 @@ int process_receiver(int sfd, int fileOut){
 			//	and return the last ack
 			// truncated ?
 			// if packet length 0 + sequence number already done
+			read_to_list_r(list, &current_window, seqnum, sfd);
 		}
+
+		seqnum = check_for_ack(list, seqnum, sfd);
+		free_packet_queue(list, seqnum);
 	}
 
 	return 0;
@@ -102,7 +273,7 @@ int main(int argc, char* argv[]){
 		fd = open(file, O_RDWR);
 		if(fd < 0){
 			fprintf(stderr, "Impossible to open the file %s. Using now stdin\n", file);
-			d = STDOUT_FILENO;
+			fd = STDOUT_FILENO;
 		}
 	}
 	else{

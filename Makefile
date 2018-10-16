@@ -14,7 +14,7 @@ CFLAGS += -D_POSIX_C_SOURCE=201112L -D_XOPEN_SOURCE # feature_test_macros for ge
 
 LDFLAGS = -rdynamic -lz
 
-all: sender #receiver
+all: sender receiver
 
 nyancat.o : src/nyancat.c src/nyancat.h
 		gcc -c src/nyancat.c src/nyancat.h $(CFLAGS) -lz

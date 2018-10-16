@@ -45,10 +45,26 @@ typedef struct linked_list{
 } list_t;
 
 /*
+
+typedef struct node_ack{
+	int seqnum;
+	node_ack* next;
+} nack_t;
+
+typedef struct list_ack{
+	nack_t* head;
+	nack_t* tail;
+	int size;
+} lack_t;
+*/
+
+/*
  * Creates a linked_list and initialize everything to O/NULL;
  * @return: the new linked_list, or NULL in case of error
  */
 list_t* list_create();
+
+//lack_t* lack_create();
 
 /*
  * Add a packet at the tail of the list and updates the size and the tail
@@ -68,3 +84,14 @@ int add_element_queue(list_t* list, pkt_t* packet);
 int pop_element_queue(list_t* list, pkt_t* packet);
 
 int pop_specific_element_queue(list_t* list, int seqnum);
+/*
+
+int add_ack_queue(lack_t* lack, int seqnum);
+
+int pop_ack_queue(lack_t* lack, int* seqnum);
+*/
+
+int add_specific_queue(list_t* list, pkt_t* packet);
+
+
+

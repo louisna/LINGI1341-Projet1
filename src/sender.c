@@ -14,7 +14,7 @@
 #include "packet_implement.h"
 #define MAX_READ_SIZE 1024 // need to be changed ?
 #define RETRANSMISSION_TIMER 2 // pour l'instant
-#define MAX_WINDOW_SIZE 31;
+//#define MAX_WINDOW_SIZE 31;
 
 
 /*
@@ -33,20 +33,20 @@ int send_packet(pkt_t* pkt, int sfd){
 		return -1;
 	}
 
-	char buf;
 	size_t length = 3*sizeof(uint32_t);
 	if(pkt_get_length(pkt)!=0){
 		length += pkt_get_length(pkt);
 		length += sizeof(uint32_t);
 	}
-				
-	pkt_status_code err2 = pkt_encode(pkt, &buf, &length);
+
+	char buff[length];				
+	pkt_status_code err2 = pkt_encode(pkt, &buff, &length);
 	if(err2!=PKT_OK){
 		fprintf(stderr, "Error while using pkt_encode : error is %d\n",err2);
 		return -1;
 	}
 
-	ssize_t err3 = send( sfd, &buf, length,0);
+	ssize_t err3 = send( sfd, &buff, length,0);
 	if(err3==-1){
 		fprintf(stderr, "Error while sending packet\n");
 		return -1;
@@ -97,7 +97,7 @@ void send_specific_pkt(int sfd, list_t* list, int seqnum){
 	node_t* runner = list->head;
 	while(runner != NULL){
 		pkt_t* packet = runner->packet;
-		if(seqnum == pkt_get_seqnum(pkt)){
+		if(seqnum == pkt_get_seqnum(packet)){
 			int err = send_packet(packet, sfd);
 			if(err){
 				fprintf(stderr, "Packet with NACK cannot be sent\n");
@@ -144,7 +144,7 @@ int check_ack(int sfd, list_t* list, int last_seqnum, int* window){
             	fprintf(stderr, "Impossible to decode teh package [check_ack]\n");
             	return -1;
             }
-            *window = pkt_get_window(pkt);`
+            *window = pkt_get_window(pkt);
             if(*window == 0)
             	*window = 1;
             int seqnum_ack = pkt_get_seqnum(pkt);
@@ -232,7 +232,7 @@ int read_to_list(int fd, list_t* list, int window, int new_seqnum, int sfd, int 
 				int err1 = 0;
 				int err2 = pkt_set_type(pkt, PTYPE_DATA);
 				int err3 = pkt_set_tr(pkt, 0);
-				int err4 = pkt_set_window(pkt, MAX_WINDOW_SIZE - list->list - 1);
+				int err4 = pkt_set_window(pkt, MAX_WINDOW_SIZE - list->size - 1);
 				int err5 = 0;
 				if(readed > 0){
 					err1 = pkt_set_seqnum(pkt, new_seqnum);
