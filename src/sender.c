@@ -299,14 +299,14 @@ int process_sender(int sfd, int fileIn){
 			return -1; // vraiment ?
 		}
 
+		else if(FD_ISSET(sfd, &check_fd)){
+			
+		}
 		else if(FD_ISSET(fileIn, &check_fd)){
 			//seqnum = read_to_list(fileIn, list, int window, seqnum, sfd ){
 			// Read from fileIn, create packet,
 			// reprendre le time
 			//pas oublier de stopper le renvoi de timeout à la fin de la window size
-		}
-		else if(FD_ISSET(sfd, &check_fd)){
-
 		}
 		//check timeout
 		
