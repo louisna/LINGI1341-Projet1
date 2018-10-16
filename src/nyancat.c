@@ -111,9 +111,11 @@ int pop_element_queue(list_t* list, pkt_t* packet){
 int pop_specific_element_queue(list_t* list, int seqnum){
     node_t* runner = list->head;
     node_t* previous;
-    while(runner != NULL && runner->packet->seqnum < seqnum){
+    pkt_t* packet = runner->packet;
+    while(runner != NULL && pkt_get_seqnum(packet) < seqnum){
         previous = runner;
         runner = runner->next;
+        packet = runner->packet;
     }
     if(!runner){
         fprintf(stderr, "Not found [pop_specific_element_queue]\n");
@@ -132,8 +134,9 @@ int pop_specific_element_queue(list_t* list, int seqnum){
     else{
         previous->next = runner->next;
         list->size--;
-        pkt_def(runner->packet);
+        pkt_del(runner->packet);
         free(runner);
         return 0;
     }
 }
+

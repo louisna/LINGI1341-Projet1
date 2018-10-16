@@ -67,3 +67,4 @@ int add_element_queue(list_t* list, pkt_t* packet);
  */
 int pop_element_queue(list_t* list, pkt_t* packet);
 
+int pop_specific_element_queue(list_t* list, int seqnum);

@@ -61,13 +61,14 @@ int send_packet(pkt_t* pkt, int sfd){
 int packet_checked(list_t* list, int seqnum_ack){
     node_t* runner = list->head;
     node_t* current;
-    int seqnum = runner->packet->seqnum;
+    pkt_t* packet = runner->packet;
+    int seqnum = pkt_get_seqnum(packet);
 
     while(runner != NULL && seqnum < seqnum_ack){
         current = runner;
         runner = runner->next;
 
-        pkt_t* packet_pop;
+        pkt_t* packet_pop = NULL;
         int err = pop_element_queue(list, packet_pop);
         if(!err){
             fprintf(stderr, "List was in fact empty [packet_checked]\n");
@@ -97,12 +98,13 @@ int check_ack(int sfd, list_t* list, int last_seqnum, int* window){
         return -1;
     }
     pkt_t* pkt_head = list->head->packet;
-    int first_seqnum = pkt_head->seqnum;
+    int first_seqnum = pkt_get_seqnum(pkt_head);
 
     char buffer[MAX_READ_SIZE];
     int readed = recv(sfd, buffer, MAX_READ_SIZE, 0);
     if(readed == -1){
         fprintf(stderr, "Error while receving ack [check_ack]\n");
+        return -1;
     }
     else{
         pkt_t* pkt = pkt_new();
@@ -111,8 +113,8 @@ int check_ack(int sfd, list_t* list, int last_seqnum, int* window){
         }
         else{
             pkt_decode(buffer, readed, pkt);
-            *window = pkt->window;
-            int seqnum_ack = pkt->seqnum;
+            *window = pkt_get_window(pkt);
+            int seqnum_ack = pkt_get_seqnum(pkt);
 
             if(seqnum_ack < first_seqnum || seqnum_ack > last_seqnum){
                 fprintf(stderr, "seqnum_ack out of bounds [check_ack]\n");
@@ -120,12 +122,12 @@ int check_ack(int sfd, list_t* list, int last_seqnum, int* window){
                 return 0; // just ack out of bounds, but not an error
             }
 
-            if(pkt->type == PTYPE_DATA){
+            if(pkt_get_type(pkt) == PTYPE_DATA){
                 // we can delete the packets from list with the accumilative ack
                 int err = packet_checked(list, seqnum_ack);
             }
-            else if(pkt->type == PTYPE_NACK){ // devoir juste retirer l'element specifique ?
-                int err = pop_specific_element_queue(list, pkt->seqnum);
+            else if(pkt_get_type(pkt) == PTYPE_NACK){ // devoir juste retirer l'element specifique ?
+                int err = pop_specific_element_queue(list, pkt_get_seqnum(pkt));
                 if(err){
                     fprintf(stderr, "Error after [pop_specific_element_queue]\n");
                     return -1;
@@ -141,6 +143,7 @@ int check_ack(int sfd, list_t* list, int last_seqnum, int* window){
             return 0;
         }
     }
+    return 0;
 }
 
 
@@ -329,10 +332,12 @@ int main(int argc, char* argv[]){
 	// tests
 
 	// do something
+	/*
 	int seqnum = 254;
 	list_t* list = list_create();
 	int error = read_to_list(fd, list, 3, seqnum);
 	print_list(list);
+	*/
 
 
 
