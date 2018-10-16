@@ -85,7 +85,6 @@ int add_element_queue(list_t* list, pkt_t* packet){
     }
 }
 
-
 int pop_element_queue(list_t* list, pkt_t* packet){
     if(list->size==0){
         fprintf(stderr, "Empty list [pop element queue]\n");
@@ -105,6 +104,36 @@ int pop_element_queue(list_t* list, pkt_t* packet){
             list->size--;
         }
         free(head);
+        return 0;
+    }
+}
+
+int pop_specific_element_queue(list_t* list, int seqnum){
+    node_t* runner = list->head;
+    node_t* previous;
+    while(runner != NULL && runner->packet->seqnum < seqnum){
+        previous = runner;
+        runner = runner->next;
+    }
+    if(!runner){
+        fprintf(stderr, "Not found [pop_specific_element_queue]\n");
+        return -1; // not found
+    }
+    if(list->head == runner){ // is tail
+        pkt_t* pkt;
+        int err = pop_element_queue(list, pkt);
+        pkt_del(pkt);
+        if(err){
+            fprintf(stderr, "Error [pop_specific_element_queue]\n");
+            return -1;
+        }
+        return 0;
+    }
+    else{
+        previous->next = runner->next;
+        list->size--;
+        pkt_def(runner->packet);
+        free(runner);
         return 0;
     }
 }

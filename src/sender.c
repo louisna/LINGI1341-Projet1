@@ -52,6 +52,98 @@ int send_packet(pkt_t* pkt, int sfd){
 	return 0;
 }
 
+/*
+ * Checks and delete all the packets with a seqnum below seqnum_ack
+ * @list: the linked_list with the packets sended, != NULL
+ * @seqnum_ack: the seqnum of the ack
+ * @return: -1 in case of error, 0 otherwise
+ */
+int packet_checked(list_t* list, int seqnum_ack){
+    node_t* runner = list->head;
+    node_t* current;
+    int seqnum = runner->packet->seqnum;
+
+    while(runner != NULL && seqnum < seqnum_ack){
+        current = runner;
+        runner = runner->next;
+
+        pkt_t* packet_pop;
+        int err = pop_element_queue(list, packet_pop);
+        if(!err){
+            fprintf(stderr, "List was in fact empty [packet_checked]\n");
+            return -1;
+        }
+        pkt_del(packet_pop);
+    }
+    return 0;
+
+}
+
+/*
+ * Check the ack-packet receved from sfd, and delete from list all
+ * the packets with a seqnum below the seqnum of the ack
+ * @sfd: the socket file descriptor
+ * @list: the linked-list with all the packets
+ * @last_seqnum: the seqnum of the last element of the window+1
+ * @window: a pointer to the actual window size, may change with 
+ */
+int check_ack(int sfd, list_t* list, int last_seqnum, int* window){
+    if(list == NULL){
+        fprintf(stderr, "List NULL [chack_ack]\n");
+        return -1;
+    }
+    if(!list->size){
+        fprintf(stderr, "List empty [check_ack]\n");
+        return -1;
+    }
+    pkt_t* pkt_head = list->head->packet;
+    int first_seqnum = pkt_head->seqnum;
+
+    char buffer[MAX_READ_SIZE];
+    int readed = recv(sfd, buffer, MAX_READ_SIZE, 0);
+    if(readed == -1){
+        fprintf(stderr, "Error while receving ack [check_ack]\n");
+    }
+    else{
+        pkt_t* pkt = pkt_new();
+        if(!pkt){
+            fprintf(stderr, "Not enough memory while creating a new pkt [check_ack]\n");
+        }
+        else{
+            pkt_decode(buffer, readed, pkt);
+            *window = pkt->window;
+            int seqnum_ack = pkt->seqnum;
+
+            if(seqnum_ack < first_seqnum || seqnum_ack > last_seqnum){
+                fprintf(stderr, "seqnum_ack out of bounds [check_ack]\n");
+                pkt_del(pkt);
+                return 0; // just ack out of bounds, but not an error
+            }
+
+            if(pkt->type == PTYPE_DATA){
+                // we can delete the packets from list with the accumilative ack
+                int err = packet_checked(list, seqnum_ack);
+            }
+            else if(pkt->type == PTYPE_NACK){ // devoir juste retirer l'element specifique ?
+                int err = pop_specific_element_queue(list, pkt->seqnum);
+                if(err){
+                    fprintf(stderr, "Error after [pop_specific_element_queue]\n");
+                    return -1;
+                }
+            }
+            else{
+                fprintf(stderr, "Wrong type of ack packet [check_ack]\n");
+                pkt_del(pkt);
+                return -1;
+            }
+
+            pkt_del(pkt);
+            return 0;
+        }
+    }
+}
+
+
 
 
 /*
