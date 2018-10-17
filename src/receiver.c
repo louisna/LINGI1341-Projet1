@@ -308,9 +308,6 @@ int process_receiver(int sfd, int fileOut){
 	fd_set check_fd; // for the function select()
 	int retval; // return value of select
 	list_t* list = list_create();
-	struct timeval tv;
-	tv.tv_sec = 1;
-	tv.tv_usec = 0;
 
 	if(!list){
 		fprintf(stderr, "Not enough memory to create the list. Fatal error.\n");
@@ -325,7 +322,7 @@ int process_receiver(int sfd, int fileOut){
 		FD_ZERO(&check_fd);
 		FD_SET(sfd, &check_fd);
 
-		retval = select(max_fd+1, &check_fd, NULL, NULL, &tv);
+		retval = select(max_fd+1, &check_fd, NULL, NULL,0);
 
 		if(retval == -1){
 			fprintf(stderr, "Error from select [process_receiver]\n");
