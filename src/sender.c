@@ -295,7 +295,7 @@ int process_sender(int sfd, int fileIn){
 		FD_SET(sfd, &check_fd);
 		FD_SET(fileIn, &check_fd);
 
-		retval = select(max_fd+1, &check_fd, NULL, NULL, &tv);
+		retval = select(max_fd+1, &check_fd, NULL, NULL, 0);
 
 		if(retval == -1){
 			fprintf(stderr, "Error from select [process_sender]");

@@ -16,7 +16,7 @@
 #define MAX_READ_SIZE 1024 // need to be changed ?
 
 int waited_seqnum = 0; // the waited seqnum
-int window_size = 1; // the size of the window
+int window_size = 5; // the size of the window
 
 /*
  * Sends the packet pkt to be an ack
@@ -206,7 +206,7 @@ int read_to_list_r(list_t* list, int sfd, int fd){
 		fprintf(stderr, "BIG ERROR: list NULL!\n");
 		return -1;
 	}
-	char buffer[MAX_PAYLOAD_SIZE];
+	char buffer[MAX_READ_SIZE];
 	int readed = recv(sfd, buffer, MAX_READ_SIZE, 0);
 	if(readed == -1){
 		fprintf(stderr, "Error while receving data [read_to_list_r]\n");
@@ -309,8 +309,6 @@ int process_receiver(int sfd, int fileOut){
 	int retval; // return value of select
 	list_t* list = list_create();
 	struct timeval tv;
-	tv.tv_sec = 1;
-	tv.tv_usec = 0;
 
 	if(!list){
 		fprintf(stderr, "Not enough memory to create the list. Fatal error.\n");
@@ -318,14 +316,18 @@ int process_receiver(int sfd, int fileOut){
 	}
 
 	// check the maximum fd, may be fileOut ?
-	int max_fd = sfd > fileOut ? sfd : fileOut;
+	int max_fd;
+	if(sfd > fileOut)
+		max_fd = sfd;
+	else
+		max_fd = fileOut;
 
 	while(1){
 
 		FD_ZERO(&check_fd);
 		FD_SET(sfd, &check_fd);
 
-		retval = select(max_fd+1, &check_fd, NULL, NULL, &tv);
+		retval = select(max_fd+1, &check_fd, NULL, NULL, 0);
 
 		if(retval == -1){
 			fprintf(stderr, "Error from select [process_receiver]\n");
@@ -333,13 +335,15 @@ int process_receiver(int sfd, int fileOut){
 		}
 
 		else if(FD_ISSET(sfd, &check_fd)){
+			printf("SALUT JE SUIS LA\n");
 			// read from sfd
 			// check if in sequence
 			// if out of sequence, stock in list
 			//	and return the last ack
 			// truncated ?
 			// if packet length 0 + sequence number already done
-			read_to_list_r(list, sfd, fileOut);
+			int err = read_to_list_r(list, sfd, fileOut);
+			printf("%d\n", err);
 		}
 	}
 
@@ -425,8 +429,8 @@ int main(int argc, char* argv[]){
 
 	// do something
 	printf("Test\n");
-	sfd = wait_for_client(sfd);
-	if(sfd > 0 && sfd < 0){
+	int err_wait = wait_for_client(sfd);
+	if(sfd > 0 && err_wait < 0){
 		fprintf(stderr, "Error wait_for_client\n");
 		return -1;
 	}
