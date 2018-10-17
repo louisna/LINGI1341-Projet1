@@ -148,34 +148,35 @@ int read_to_list_r(list_t* list, int *window, int seqnum, int sfd){
 		fprintf(stderr, "BIG ERROR: list NULL!\n");
 		return -1;
 	}
-	while(list->size < window){
-		char buffer[MAX_PAYLOAD_SIZE];
-		int readed = recv(sfd, buffer, MAX_READ_SIZE, 0);
-		if(readed == -1){
-			fprintf(stderr, "Error while receving data [read_to_list_r]\n");
+	char buffer[MAX_PAYLOAD_SIZE];
+	int readed = recv(sfd, buffer, MAX_READ_SIZE, 0);
+	if(readed == -1){
+		fprintf(stderr, "Error while receving data [read_to_list_r]\n");
+	}
+	else{
+		pkt_t* pkt = pkt_new();
+		if(!pkt){
+			fprintf(stderr, "Not enough memory while creation a packet [read_to_list_t]\n");
 		}
 		else{
-			pkt_t* pkt = pkt_new();
-			if(!pkt){
-				fprintf(stderr, "Not enough memory while creation a packet [read_to_list_t]\n");
+			int err = pkt_decode(buffer, readed, pkt);
+			if(err != 0){
+				fprintf(stderr, "Wrong package, CRC\n");
+				free(pkt);
+				return -1;
 			}
-			else{
-				int err = pkt_decode(buffer, readed, pkt);
-				if(err){
-					fprintf(stderr, "Impossible to decode [read___r]\n");
+			if(pkt_get_tr(pkt) == 1){
+				// packet troncated
+				fprintf(stderr, "Packet was troncated\n");
+				pkt_t* nack = create_ack(pkt_get_seqnum(pkt), PTYPE_NACK, window);
+				if(!nack){
+					fprintf(stderr, "Error while creating package, [rolr]\n");
+					pkt_del(pkt);
+					return -1;
 				}
+				send_ack(nack, sfd);
+			}
 
-				if(seqnum == pkt_get_seqnum(pkt) && pkt_get_length(pkt) == 0){
-					//end
-					return -2;
-				}
-				*window = pkt_get_window(pkt);
-				int seqnum_interval_max = (seqnum + *window) % 256;
-				if(seqnum_interval_max > pkt_get_seqnum(pkt)){ // A CHANGER !!! PREND PAS EN COMPTE LE MODULO
-					// peut etre ajoute
-					add_specific_queue(list, pkt);
-				}
-			}
 		}
 	}
 	return 0;
@@ -250,9 +251,6 @@ int process_receiver(int sfd, int fileOut){
 			// if packet length 0 + sequence number already done
 			read_to_list_r(list, &current_window, seqnum, sfd);
 		}
-
-		seqnum = check_for_ack(list, seqnum, sfd);
-		free_packet_queue(list, seqnum);
 	}
 
 	return 0;
