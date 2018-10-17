@@ -15,7 +15,7 @@
 
 #define MAX_READ_SIZE 1024 // need to be changed ?
 
-int waited_seqnum = 0; // the waited seqnum
+int waited_seqnum = 1; // the waited seqnum
 int window_size = 5; // the size of the window
 
 /*

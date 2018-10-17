@@ -17,6 +17,10 @@
 //#define MAX_WINDOW_SIZE 31;
 
 
+int seqnum = 0; // the waited seqnum
+int window_size = 5; // the size of the window
+
+
 /*
  * Function that will send a packet to the socket
  * @pkt: the adress of the packet to be sent
@@ -62,17 +66,22 @@ int send_packet(pkt_t* pkt, int sfd){
  */
 int packet_checked(list_t* list, int seqnum_ack){
     node_t* runner = list->head;
-    node_t* current;
-    pkt_t* packet = runner->packet;
-    int seqnum = pkt_get_seqnum(packet);
+    pkt_t* packet ;
+    int seqn;
 
-    while(runner != NULL && seqnum < seqnum_ack){
-        current = runner;
+    while(runner != NULL){
+
+        packet = runner->packet;
+    	seqn = pkt_get_seqnum(packet);
+    	if(seqn>seqnum_ack){
+    		return 0;
+    	}
+
         runner = runner->next;
 
         pkt_t* packet_pop = NULL;
         int err = pop_element_queue(list, packet_pop);
-        if(!err){
+        if(err){
             fprintf(stderr, "List was in fact empty [packet_checked]\n");
             return -1;
         }
@@ -82,22 +91,11 @@ int packet_checked(list_t* list, int seqnum_ack){
 
 }
 
-int check_seqnum(list_t* list, int seqnum){
-	node_t* runner = list->head;
-	while(runner != NULL){
-		pkt_t* pkt = runner->packet;
-		if(pkt_get_seqnum(pkt) == seqnum)
-			return 1;
-		runner = runner->next;
-	}
-	return 0;
-}
-
-void send_specific_pkt(int sfd, list_t* list, int seqnum){
+void send_specific_pkt(int sfd, list_t* list, int seqn){
 	node_t* runner = list->head;
 	while(runner != NULL){
 		pkt_t* packet = runner->packet;
-		if(seqnum == pkt_get_seqnum(packet)){
+		if(seqn == pkt_get_seqnum(packet)){
 			int err = send_packet(packet, sfd);
 			if(err){
 				fprintf(stderr, "Packet with NACK cannot be sent\n");
@@ -115,7 +113,7 @@ void send_specific_pkt(int sfd, list_t* list, int seqnum){
  * @last_seqnum: the seqnum of the last element of the window+1
  * @window: a pointer to the actual window size, may change with 
  */
-int check_ack(int sfd, list_t* list, int last_seqnum, int* window){
+int check_ack(int sfd, list_t* list){
     if(list == NULL){
         fprintf(stderr, "List NULL [chack_ack]\n");
         return -1;
@@ -125,7 +123,7 @@ int check_ack(int sfd, list_t* list, int last_seqnum, int* window){
         return -1;
     }
     pkt_t* pkt_head = list->head->packet;
-    int first_seqnum = pkt_get_seqnum(pkt_head);
+    int first_seqnum = pkt_get_seqnum(pkt_head);// premier seqnum qui n'a pas été ack
 
     char buffer[MAX_READ_SIZE];
     int readed = recv(sfd, buffer, MAX_READ_SIZE, 0);
@@ -144,20 +142,16 @@ int check_ack(int sfd, list_t* list, int last_seqnum, int* window){
             	fprintf(stderr, "Impossible to decode teh package [check_ack]\n");
             	return -1;
             }
-            *window = pkt_get_window(pkt);
-            if(*window == 0)
-            	*window = 1;
+            window_size = pkt_get_window(pkt);
             int seqnum_ack = pkt_get_seqnum(pkt);
 
-            if(!check_seqnum(list, seqnum_ack)){
-                fprintf(stderr, "seqnum_ack out of bounds [check_ack]\n");
-                pkt_del(pkt);
-                return 0; // just ack out of bounds, but not an error
-            }
 
-            if(pkt_get_type(pkt) == PTYPE_DATA){
+            if(pkt_get_type(pkt) == PTYPE_ACK){
                 // we can delete the packets from list with the accumilative ack
-                int err = packet_checked(list, seqnum_ack);
+                err = packet_checked(list, seqnum_ack);
+                if(err){
+                	fprintf(stderr, "Error in packet_checked\n");
+                }
             }
             else if(pkt_get_type(pkt) == PTYPE_NACK){ // devoir juste retirer l'element specifique ?
                 
@@ -212,10 +206,10 @@ int check_timeout(list_t* list, int sfd, int window){
 
 // !!!!!!!!!!!!!!!!!!!! peut-etre changer new_seqnum par le dernier numero de sequence deja utilise ?
 // !!!!!!!!!!!!!!!!!!!! et retourner aussi le dernier deja utilise ? Peut-etre plus simple pour apres
-int read_to_list(int fd, list_t* list, int window, int new_seqnum, int sfd, int last_ack_seqnum){
+void read_to_list(int fd, list_t* list, int sfd){
 	if(!list){
 		fprintf(stderr, "BIG ERROR: list NULL!\n");
-		return -1;
+		return;
 	}
 		char payload[MAX_PAYLOAD_SIZE]; // maybe put it before the wile loop
 		int readed = read(fd, payload, MAX_PAYLOAD_SIZE);
@@ -234,13 +228,10 @@ int read_to_list(int fd, list_t* list, int window, int new_seqnum, int sfd, int 
 				int err4 = pkt_set_window(pkt, MAX_WINDOW_SIZE - list->size - 1);
 				int err5 = 0;
 				if(readed > 0){
-					err1 = pkt_set_seqnum(pkt, new_seqnum);
+					err1 = pkt_set_seqnum(pkt, seqnum);
 					err5 = pkt_set_payload(pkt, payload, readed);
 				}
-				else{
-					err1 = pkt_set_seqnum(pkt, last_ack_seqnum);
-					err5 = pkt_set_payload(pkt, NULL, 0);
-				}
+				//else supprimé à check, on devrait pas renvoyer le seqnum -1 simplement ?
 				if(err1 || err2 || err3 || err4 || err5){
 					fprintf(stderr, "Error while seting the pkt\n");
 				}
@@ -258,14 +249,9 @@ int read_to_list(int fd, list_t* list, int window, int new_seqnum, int sfd, int 
 				if(err){
 					fprintf(stderr, "Error while adding the packet to the queue, discarded\n");
 				}
-				if(readed == 0){
-					fprintf(stderr, "EOF reached, end.\n");
-					return -2;
-				}
-				new_seqnum = (new_seqnum + 1)%256; // 256 ?
+				seqnum = (seqnum + 1)%256; // 256 ?
 			}	
 		}
-	return new_seqnum;
 }
 
 
@@ -280,17 +266,11 @@ int process_sender(int sfd, int fileIn){
 	fd_set check_fd; // for the function select()
 	int retval; // return value of select
 	list_t* list = list_create();
-	int seqnum = 0;
-	int window = 1;
-	struct timeval tv;
-	tv.tv_sec = 1;
-	tv.tv_usec = 0;
 
 	// check the maximum fd, may be fileIn ?
 	int max_fd = sfd > fileIn ? sfd : fileIn;
 
 	while(1){
-
 		FD_ZERO(&check_fd);
 		FD_SET(sfd, &check_fd);
 		FD_SET(fileIn, &check_fd);
@@ -303,14 +283,14 @@ int process_sender(int sfd, int fileIn){
 		}
 
 		else if(FD_ISSET(sfd, &check_fd)){
-			check_ack(sfd, list, seqnum, &window);
+			check_ack(sfd, list);
 		}
 		else if(FD_ISSET(fileIn, &check_fd)){
 			//seqnum = read_to_list(fileIn, list, int window, seqnum, sfd ){
 			// Read from fileIn, create packet,
 			// reprendre le time
 			//pas oublier de stopper le renvoi de timeout à la fin de la window size
-			seqnum = read_to_list(fileIn, list, window, seqnum, sfd, seqnum);
+			read_to_list(fileIn, list, sfd);
 		}
 		//check timeout
 		
