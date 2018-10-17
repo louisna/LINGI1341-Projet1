@@ -15,6 +15,9 @@
 
 #define MAX_READ_SIZE 1024 // need to be changed ?
 
+int waited_seqnum = 0; // the waited seqnum
+int window_size = 1; // the size of the window
+
 /*
  * Sends the packet pkt to be an ack
  * @pkt: the packet to be sent
@@ -39,13 +42,13 @@ int send_ack(pkt_t* pkt, int sfd){
 	}
 	char buff[length];
 				
-	pkt_status_code err2 = pkt_encode(pkt, &buff, &length);
+	pkt_status_code err2 = pkt_encode(pkt, buff, &length);
 	if(err2!=PKT_OK){
 		fprintf(stderr, "Error while using pkt_encode : error is %d\n",err2);
 		return -1;
 	}
 
-	ssize_t err3 = send(sfd, &buff, length,0);
+	ssize_t err3 = send(sfd, buff, length,0);
 	if(err3==-1){
 		fprintf(stderr, "Error while sending packet\n");
 		return -1;
@@ -67,8 +70,8 @@ pkt_t* create_ack(int seqnum, int type, int new_window){
 	pkt_set_payload(new, NULL, 0);
 	pkt_set_window(new, new_window);
 	return new;
-
 }
+
 /*
  * Givent list and first_seqnum, checks and create an ack for
  * each paket with a consecutive seqnum
@@ -77,6 +80,7 @@ pkt_t* create_ack(int seqnum, int type, int new_window){
  * @sfd: the socket file descriptor
  * @return the seqnum of the last ack sent
  */
+/*
 int check_for_ack(list_t* list, int first_seqnum, int sfd){
 	node_t* runner = list->head;
 	pkt_t* pkt = runner->packet;
@@ -113,12 +117,14 @@ int check_for_ack(list_t* list, int first_seqnum, int sfd){
 	}
 	return first_seqnum;
 }
+*/
 
 /*
  * Free all the packets/nodes with a seqnum below the seqnum
  * @list: the list
  * @seqnum: the seqnum of the last ack (which must be keeped)
  */
+/*
 void free_packet_queue(list_t* list, int seqnum){
 	node_t* runner = list->head;
 	while(runner != NULL){
@@ -135,6 +141,58 @@ void free_packet_queue(list_t* list, int seqnum){
 		pkt_del(pkt2);
 	}
 }
+*/
+
+int check_in_window(int seqnum){
+	if(seqnum > waited_seqnum){ // pas de passage 255 -> 0
+		if(seqnum - waited_seqnum <= window_size)
+			return 1;
+		else
+			return 0;
+	}
+	else{//passage par 255->0
+		if(255 + seqnum - waited_seqnum <= window_size)
+			return 1;
+		else
+			return 0;
+	}
+}
+/*
+ * Returns 1 if waited_seqnum does not move, -1 error, 0 otherwise
+ */
+int write_in_sequence(list_t* list, int sfd, int fd){
+	node_t* runner = list->head;
+	node_t* previous;
+	pkt_t* packet = runner->packet;
+	if(runner != NULL && pkt_get_seqnum(packet) != waited_seqnum){
+		// not in sequence
+		return 1;
+	}
+	while(runner != NULL){
+		packet = runner->packet;
+		if(pkt_get_seqnum(packet) == waited_seqnum){
+			int writed = write(fd, pkt_get_payload(packet), pkt_get_length(packet));
+			if(writed == -1){
+				fprintf(stderr, "Impossible to write on fd\n");
+				return -1;
+			}
+			waited_seqnum++;
+			previous = runner;
+			runner = runner->next;
+
+			pkt_t* detrop = NULL;
+			pop_element_queue(list, detrop);
+
+			pkt_t* ack = create_ack(waited_seqnum, PTYPE_ACK, window_size);
+			send_ack(ack, sfd);
+
+			pkt_del(detrop); //detrop == packet
+		}
+		else
+			return 0; // not the waited
+	}
+	return 1;
+}
 
 /*
  * Reads data from the sfd, and add the packets to the list
@@ -143,7 +201,7 @@ void free_packet_queue(list_t* list, int seqnum){
  * @seqnum: the seqnum of the first packet waited
  * @return: -1 in case of error, -2 if the transfer is done, -1 otherwise
  */
-int read_to_list_r(list_t* list, int *window, int seqnum, int sfd){
+int read_to_list_r(list_t* list, int sfd, int fd){
 	if(!list){
 		fprintf(stderr, "BIG ERROR: list NULL!\n");
 		return -1;
@@ -162,22 +220,55 @@ int read_to_list_r(list_t* list, int *window, int seqnum, int sfd){
 			int err = pkt_decode(buffer, readed, pkt);
 			if(err != 0){
 				fprintf(stderr, "Wrong package, CRC\n");
-				free(pkt);
+				pkt_del(pkt);
 				return -1;
 			}
 			if(pkt_get_tr(pkt) == 1){
 				// packet troncated
 				fprintf(stderr, "Packet was troncated\n");
-				pkt_t* nack = create_ack(pkt_get_seqnum(pkt), PTYPE_NACK, window);
+				pkt_t* nack = create_ack(pkt_get_seqnum(pkt), PTYPE_NACK, window_size);
 				if(!nack){
 					fprintf(stderr, "Error while creating package, [rolr]\n");
 					pkt_del(pkt);
 					return -1;
 				}
 				send_ack(nack, sfd);
+				pkt_del(nack);
+			}
+			else if(check_in_window(pkt_get_seqnum(pkt))){ // dans la window
+				add_specific_queue(list, pkt); // stock packet in list
+				int not_in_sequence = write_in_sequence(list, sfd, fd); // writes to fd and sends ack
+				if(not_in_sequence == -1){
+					fprintf(stderr, "Error write in sequence\n");
+					return -1;
+				}
+				else if(not_in_sequence == 1){ 
+					//if the first packet needed is still not here, we send an ack with the waited one
+					pkt_t* ack = create_ack(waited_seqnum, PTYPE_ACK, window_size);
+					if(!ack){
+						fprintf(stderr, "Error while creating package, [rolr]\n");
+						pkt_del(pkt);
+						return -1;
+					}
+					send_ack(ack, sfd);
+					pkt_del(ack);
+				}
+			}
+			else{
+				// out of window
+				pkt_del(pkt);
+				pkt_t* ack = create_ack(waited_seqnum, PTYPE_ACK, window_size);
+				if(!ack){
+					fprintf(stderr, "Error while creating package, [rolr]\n");
+					pkt_del(pkt);
+					return -1;
+				}
+				send_ack(ack, sfd);
+				pkt_del(ack);
 			}
 
 		}
+		pkt_del(pkt);
 	}
 	return 0;
 }
@@ -205,6 +296,7 @@ int wait_for_client(int sfd){
         fprintf(stderr, "Error using connect");
         return -1;
     }
+    printf("Connected!\n");
 
     return 0;
 }
@@ -216,8 +308,6 @@ int process_receiver(int sfd, int fileOut){
 	fd_set check_fd; // for the function select()
 	int retval; // return value of select
 	list_t* list = list_create();
-	int seqnum = 0;
-	int current_window = 1;
 	struct timeval tv;
 	tv.tv_sec = 1;
 	tv.tv_usec = 0;
@@ -249,7 +339,7 @@ int process_receiver(int sfd, int fileOut){
 			//	and return the last ack
 			// truncated ?
 			// if packet length 0 + sequence number already done
-			read_to_list_r(list, &current_window, seqnum, sfd);
+			read_to_list_r(list, sfd, fileOut);
 		}
 	}
 
@@ -267,7 +357,6 @@ void print_list(list_t* list){
 int main(int argc, char* argv[]){
 
 	/* default values */
-	int client = 0;
 	int port = 12345;
 	int opt;
 	char* host = "::1";
