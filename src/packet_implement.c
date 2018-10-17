@@ -36,8 +36,8 @@ pkt_t* pkt_new()
 
 void pkt_del(pkt_t *pkt)
 {
-    if(pkt){
-        if(pkt->payload)
+    if(pkt!=NULL){
+        if(pkt->length>0 && pkt->payload!=NULL)
             free(pkt->payload);
 
         free(pkt);
@@ -316,10 +316,17 @@ pkt_status_code pkt_set_payload(pkt_t *pkt, const char *data, const uint16_t len
         pkt->length = 0;
     }
 
+    if(data==NULL){
+        pkt->length = 0;
+        pkt->payload = NULL;
+        return 0;
+    }
+
     char* p = (char*)malloc(sizeof(char)*length);
     if(!p){
         return E_NOMEM;
     }
+
     memcpy(p, data, length);
 
     pkt->payload = p;
