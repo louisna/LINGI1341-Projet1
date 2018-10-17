@@ -164,7 +164,6 @@ int write_in_sequence(list_t* list, int sfd, int fd){
 	node_t* runner = list->head;
 	node_t* previous;
 	pkt_t* packet = runner->packet;
-	fprintf(stderr, "%d\n",pkt_get_seqnum(packet) );
 	if(runner != NULL && pkt_get_seqnum(packet) > waited_seqnum){
 		// not in sequence
 		return 1;
@@ -185,7 +184,6 @@ int write_in_sequence(list_t* list, int sfd, int fd){
 			pop_element_queue(list, detrop);
 
 			pkt_t* ack = create_ack(waited_seqnum, PTYPE_ACK, window_size);
-			fprintf(stderr, "yay2\n" );
 			send_ack(ack, sfd);
 
 			pkt_del(detrop); //detrop == packet
@@ -234,7 +232,6 @@ int read_to_list_r(list_t* list, int sfd, int fd){
 					pkt_del(pkt);
 					return -1;
 				}
-				fprintf(stderr, "yay3\n" );
 				send_ack(nack, sfd);
 				pkt_del(nack);
 				pkt_del(pkt);
@@ -254,7 +251,6 @@ int read_to_list_r(list_t* list, int sfd, int fd){
 						pkt_del(pkt);
 						return -1;
 					}
-					fprintf(stderr, "yay4\n" );
 					send_ack(ack, sfd);
 					pkt_del(ack);
 				}
@@ -268,7 +264,6 @@ int read_to_list_r(list_t* list, int sfd, int fd){
 					pkt_del(pkt);
 					return -1;
 				}
-				fprintf(stderr, "yay1\n" );
 				send_ack(ack, sfd);
 				pkt_del(ack);
 

@@ -169,13 +169,13 @@ int check_ack(int sfd, list_t* list){
     return 0;
 }
 
-int check_timeout(list_t* list, int sfd, int window){
+int check_timeout(list_t* list, int sfd){
 	time_t current_time = time(NULL);	
 	uint32_t  a_lo = (uint32_t) current_time;
 	int count = 0;
 
 	node_t* runner = list->head;
-	while(runner != NULL && count < window){
+	while(runner != NULL && count < window_size){
 		pkt_t* packet = runner->packet;
 		uint32_t time_sent = pkt_get_timestamp(packet);
 		if(a_lo - time_sent >= RETRANSMISSION_TIMER){
@@ -292,7 +292,7 @@ int process_sender(int sfd, int fileIn){
 			//pas oublier de stopper le renvoi de timeout à la fin de la window size
 			read_to_list(fileIn, list, sfd);
 		}
-		//check timeout
+		check_timeout(list,sfd);
 		
 
 	}
