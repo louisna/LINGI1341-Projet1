@@ -424,14 +424,16 @@ int main(int argc, char* argv[]){
 	}
 
 	// do something
-	int errWait = wait_for_client(sfd);
-	if(errWait < 0){
+	printf("Test\n");
+	sfd = wait_for_client(sfd);
+	if(sfd > 0 && sfd < 0){
 		fprintf(stderr, "Error wait_for_client\n");
 		return -1;
 	}
-	process_receiver(fd, sfd);
+	printf("Succeded\n");
+	process_receiver(sfd, fd);
 
-	close(sfd);
+	
 
 	return EXIT_SUCCESS;
 }

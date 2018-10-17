@@ -217,7 +217,6 @@ int read_to_list(int fd, list_t* list, int window, int new_seqnum, int sfd, int 
 		fprintf(stderr, "BIG ERROR: list NULL!\n");
 		return -1;
 	}
-	while(list->size < window){
 		char payload[MAX_PAYLOAD_SIZE]; // maybe put it before the wile loop
 		int readed = read(fd, payload, MAX_PAYLOAD_SIZE);
 		if(readed == -1){
@@ -247,12 +246,12 @@ int read_to_list(int fd, list_t* list, int window, int new_seqnum, int sfd, int 
 				}
 
 				//On envoie le packet
-				/*
+				
 				int err6 = send_packet(pkt,sfd);
 				if(err6){
 					fprintf(stderr, "Error while sending the packet for the first time\n");
 				}
-				*/
+				
 
 				//On l'ajoute à la window
 				int err = add_element_queue(list, pkt);
@@ -266,7 +265,6 @@ int read_to_list(int fd, list_t* list, int window, int new_seqnum, int sfd, int 
 				new_seqnum = (new_seqnum + 1)%256; // 256 ?
 			}	
 		}
-	}
 	return new_seqnum;
 }
 
@@ -399,11 +397,19 @@ int main(int argc, char* argv[]){
 		fprintf(stderr, "Failed to create the socket\n");
 		exit(EXIT_FAILURE);
 	}
+	/*
+
+	char* a = "Salut";
+	pkt_t* pkt = pkt_new();
+	pkt_set_payload(pkt, a, 5);
+	send_packet(pkt, sfd);
+	*/
+	
 
 	// tests
 
 	// do something
-	process_sender(fd, sfd);
+	process_sender(sfd, fd);
 
 
 	close(sfd);
