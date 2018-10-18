@@ -12,13 +12,14 @@
 #include <fcntl.h>
 #include "nyancat.h"
 #include "packet_implement.h"
-#define MAX_READ_SIZE 1024 // need to be changed ?
-#define RETRANSMISSION_TIMER 2 // pour l'instant
+#define MAX_READ_SIZE 528 // need to be changed ?
+#define RETRANSMISSION_TIMER 5 // pour l'instant
 //#define MAX_WINDOW_SIZE 31;
 
 
 int seqnum = 0; // the waited seqnum
 int window_size = 5; // the size of the window
+int seqnum_EOF = -100;
 
 
 /*
@@ -62,19 +63,24 @@ int send_packet(pkt_t* pkt, int sfd){
  * Checks and delete all the packets with a seqnum below seqnum_ack
  * @list: the linked_list with the packets sended, != NULL
  * @seqnum_ack: the seqnum of the ack
- * @return: -1 in case of error, 0 otherwise
+ * @return: -1 in case of error, 1 if EOF ack, 0 otherwise
  */
 int packet_checked(list_t* list, int seqnum_ack){
     node_t* runner = list->head;
     pkt_t* packet ;
     int seqn;
+    printf("WE ARE ICI\n");
 
     while(runner != NULL){
 
         packet = runner->packet;
     	seqn = pkt_get_seqnum(packet);
-    	if(seqn>seqnum_ack){
+    	if(seqn>=seqnum_ack){
     		return 0;
+    	}
+    	if(seqn == seqnum_EOF+1){
+    		// EOF reached
+    		return 1;
     	}
 
         runner = runner->next;
@@ -87,6 +93,7 @@ int packet_checked(list_t* list, int seqnum_ack){
         }
         pkt_del(packet_pop);
     }
+    printf("ARENT WE HERE \n");
     return 0;
 
 }
@@ -118,12 +125,6 @@ int check_ack(int sfd, list_t* list){
         fprintf(stderr, "List NULL [chack_ack]\n");
         return -1;
     }
-    if(!list->size){
-        fprintf(stderr, "List empty [check_ack]\n");
-        return -1;
-    }
-    pkt_t* pkt_head = list->head->packet;
-    int first_seqnum = pkt_get_seqnum(pkt_head);// premier seqnum qui n'a pas été ack
 
     char buffer[MAX_READ_SIZE];
     int readed = recv(sfd, buffer, MAX_READ_SIZE, 0);
@@ -143,14 +144,21 @@ int check_ack(int sfd, list_t* list){
             	return -1;
             }
             window_size = pkt_get_window(pkt);
+            printf("Window size: %d\n", window_size);
             int seqnum_ack = pkt_get_seqnum(pkt);
+
+            printf("Seqnum of the ack %d\n", seqnum_ack);
 
 
             if(pkt_get_type(pkt) == PTYPE_ACK){
                 // we can delete the packets from list with the accumilative ack
                 err = packet_checked(list, seqnum_ack);
-                if(err){
+                if(err == -1){
                 	fprintf(stderr, "Error in packet_checked\n");
+                }
+                else if(err == 1){
+                	fprintf(stderr, "EOF reached\n");
+                	return 1;
                 }
             }
             else if(pkt_get_type(pkt) == PTYPE_NACK){ // devoir juste retirer l'element specifique ?
@@ -179,6 +187,7 @@ int check_timeout(list_t* list, int sfd){
 		pkt_t* packet = runner->packet;
 		uint32_t time_sent = pkt_get_timestamp(packet);
 		if(a_lo - time_sent >= RETRANSMISSION_TIMER){
+			printf("Packet seqnum %d was timeout, sent\n", pkt_get_seqnum(packet));
 			int err = send_packet(packet, sfd);
 			count++;
 			if(err){
@@ -211,6 +220,10 @@ void read_to_list(int fd, list_t* list, int sfd){
 		fprintf(stderr, "BIG ERROR: list NULL!\n");
 		return;
 	}
+	if(list->size >= window_size){
+		fprintf(stderr, "Window already full\n");
+		return;
+	}
 		char payload[MAX_PAYLOAD_SIZE]; // maybe put it before the wile loop
 		int readed = read(fd, payload, MAX_PAYLOAD_SIZE);
 		if(readed == -1){
@@ -227,20 +240,29 @@ void read_to_list(int fd, list_t* list, int sfd){
 				int err3 = pkt_set_tr(pkt, 0);
 				int err4 = pkt_set_window(pkt, MAX_WINDOW_SIZE - list->size - 1);
 				int err5 = 0;
-				if(readed > 0){
-					err1 = pkt_set_seqnum(pkt, seqnum);
-					err5 = pkt_set_payload(pkt, payload, readed);
+				//if(readed > 0){
+				err1 = pkt_set_seqnum(pkt, seqnum);
+				err5 = pkt_set_payload(pkt, payload, readed);
+				if(readed == 0){
+					fprintf(stderr, "EOF reached. End \n");
+					seqnum_EOF = seqnum;
 				}
+				//}
 				//else supprimé à check, on devrait pas renvoyer le seqnum -1 simplement ?
 				if(err1 || err2 || err3 || err4 || err5){
 					fprintf(stderr, "Error while seting the pkt\n");
 				}
 
 				//On envoie le packet
-				
 				int err6 = send_packet(pkt,sfd);
 				if(err6){
 					fprintf(stderr, "Error while sending the packet for the first time\n");
+				}
+				if(readed == 0){
+					close(sfd);
+					if(fd != 0)
+						close(fd);
+					exit(EXIT_SUCCESS);
 				}
 				
 
@@ -267,6 +289,10 @@ int process_sender(int sfd, int fileIn){
 	int retval; // return value of select
 	list_t* list = list_create();
 
+	struct timeval tv;
+	tv.tv_sec = RETRANSMISSION_TIMER;
+	tv.tv_usec = 0;
+
 	// check the maximum fd, may be fileIn ?
 	int max_fd = sfd > fileIn ? sfd : fileIn;
 
@@ -275,7 +301,9 @@ int process_sender(int sfd, int fileIn){
 		FD_SET(sfd, &check_fd);
 		FD_SET(fileIn, &check_fd);
 
-		retval = select(max_fd+1, &check_fd, NULL, NULL, 0);
+		retval = select(max_fd+1, &check_fd, NULL, NULL, &tv);
+		tv.tv_sec = RETRANSMISSION_TIMER;
+		tv.tv_usec = 0;
 
 		if(retval == -1){
 			fprintf(stderr, "Error from select [process_sender]");
@@ -283,7 +311,11 @@ int process_sender(int sfd, int fileIn){
 		}
 
 		else if(FD_ISSET(sfd, &check_fd)){
-			check_ack(sfd, list);
+			int retour = check_ack(sfd, list);
+			if(retour == 1){
+				fprintf(stderr, "EOF confirmed. End\n");
+				break;
+			}
 		}
 		else if(FD_ISSET(fileIn, &check_fd)){
 			//seqnum = read_to_list(fileIn, list, int window, seqnum, sfd ){

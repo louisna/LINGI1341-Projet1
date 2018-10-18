@@ -25,6 +25,7 @@ int window_size = 5; // the size of the window
  * @return 0 in case of success, 0 otherwise
  */
 int send_ack(pkt_t* pkt, int sfd){
+	printf("We send seqnum %d\n", pkt_get_seqnum(pkt));
 	time_t current_time = time(NULL);	
 	uint32_t  a_lo = (uint32_t) current_time;
 
@@ -159,6 +160,7 @@ int check_in_window(int seqnum){
 }
 /*
  * Returns 1 if waited_seqnum does not move, -1 error, 0 otherwise
+ * -10 if EOF reached
  */
 int write_in_sequence(list_t* list, int sfd, int fd){
 	node_t* runner = list->head;
@@ -184,9 +186,14 @@ int write_in_sequence(list_t* list, int sfd, int fd){
 			pop_element_queue(list, detrop);
 
 			pkt_t* ack = create_ack(waited_seqnum, PTYPE_ACK, window_size);
-			send_ack(ack, sfd);
+			//send_ack(ack, sfd);
 
 			pkt_del(detrop); //detrop == packet
+
+			if(pkt_get_length(packet) == 0){
+				// finish
+				return -10;
+			}
 		}
 		else
 			return 0; // not the waited
@@ -242,6 +249,10 @@ int read_to_list_r(list_t* list, int sfd, int fd){
 				if(not_in_sequence == -1){
 					fprintf(stderr, "Error write in sequence\n");
 					return -1;
+				}
+				if(not_in_sequence == -10){
+					fprintf(stderr, "EOF reached. End\n");
+					return -2;
 				}
 				else if(not_in_sequence == 1){ 
 					//if the first packet needed is still not here, we send an ack with the waited one
@@ -343,6 +354,10 @@ int process_receiver(int sfd, int fileOut){
 			// truncated ?
 			// if packet length 0 + sequence number already done
 			int err = read_to_list_r(list, sfd, fileOut);
+			if(err == -2){
+				fprintf(stderr, "EOF confirmed\n");
+				break;
+			}
 		}
 	}
 
@@ -427,7 +442,6 @@ int main(int argc, char* argv[]){
 	}
 
 	// do something
-	printf("Test\n");
 	int err_wait = wait_for_client(sfd);
 	if(sfd > 0 && err_wait < 0){
 		fprintf(stderr, "Error wait_for_client\n");
