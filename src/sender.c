@@ -221,7 +221,7 @@ void read_to_list(int fd, list_t* list, int sfd){
 		return;
 	}
 	if(list->size >= window_size){
-		fprintf(stderr, "Window already full\n");
+		//fprintf(stderr, "Window already full\n");
 		return;
 	}
 		char payload[MAX_PAYLOAD_SIZE]; // maybe put it before the wile loop
