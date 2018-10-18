@@ -258,50 +258,60 @@ const char* pkt_get_payload(const pkt_t* pkt)
 
 pkt_status_code pkt_set_type(pkt_t *pkt, const ptypes_t type)
 {
+	if(type > 3 || type < 0)
+		return E_TYPE;
     pkt->type = type;
-    return 0;
+    return PKT_OK;
 }
 
 pkt_status_code pkt_set_tr(pkt_t *pkt, const uint8_t tr)
 {
+	if(tr > 1 || tr < 0)
+		return E_TR;
     pkt->truncated = tr;
-    return 0;
+    return PKT_OK;
 }
 
 pkt_status_code pkt_set_window(pkt_t *pkt, const uint8_t window)
 {
+	if(window > MAX_WINDOW_SIZE)
+		return E_WINDOW;
     pkt->window = window;
-    return 0;
+    return PKT_OK;
 }
 
 pkt_status_code pkt_set_seqnum(pkt_t *pkt, const uint8_t seqnum)
 {
+	if(seqnum > 255 || seqnum < 0)
+		return E_SEQNUM;
     pkt->seqnum = seqnum;
-    return 0;
+    return PKT_OK;
 }
 
 pkt_status_code pkt_set_length(pkt_t *pkt, const uint16_t length)
 {
+	if(length > MAX_PAYLOAD_SIZE || length < 0)
+		return E_LENGTH;
     pkt->length = length;
-    return 0;
+    return PKT_OK;
 }
 
 pkt_status_code pkt_set_timestamp(pkt_t *pkt, const uint32_t timestamp)
 {
     pkt->timestamp = timestamp;
-    return 0;
+    return PKT_OK;
 }
 
 pkt_status_code pkt_set_crc1(pkt_t *pkt, const uint32_t crc1)
 {
     pkt->crc1 = crc1;
-    return 0;
+    return PKT_OK;
 }
 
 pkt_status_code pkt_set_crc2(pkt_t *pkt, const uint32_t crc2)
 {
     pkt->crc2 = crc2;
-    return 0;
+    return PKT_OK;
 }
 
 pkt_status_code pkt_set_payload(pkt_t *pkt, const char *data, const uint16_t length)
@@ -332,7 +342,7 @@ pkt_status_code pkt_set_payload(pkt_t *pkt, const char *data, const uint16_t len
     pkt->payload = p;
     pkt->length = length;
 
-    return 0;
+    return PKT_OK;
 }
 
 void print_data(pkt_t* pkt){
