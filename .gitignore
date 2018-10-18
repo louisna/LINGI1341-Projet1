@@ -5,3 +5,5 @@
 !src/*.h
 !src/inginious/**/*.c
 !src/inginious/**/*.h
+!tests/*.h
+!tests/*.c
