@@ -7,3 +7,5 @@
 !src/inginious/**/*.h
 !tests/*.h
 !tests/*.c
+!LINGI1341-linksim-master/
+!test.sh
