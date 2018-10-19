@@ -18,7 +18,7 @@
 
 
 int seqnum = 0; // the waited seqnum
-int window_size = 5; // the size of the window
+int window_size = 1; // the size of the window
 int seqnum_EOF = -100;
 
 
@@ -297,6 +297,8 @@ int process_sender(int sfd, int fileIn){
 	int max_fd = sfd > fileIn ? sfd : fileIn;
 
 	while(1){
+		fprintf(stderr, "%d\n",window_size );
+
 		FD_ZERO(&check_fd);
 		FD_SET(sfd, &check_fd);
 		FD_SET(fileIn, &check_fd);

@@ -16,7 +16,7 @@
 #define MAX_READ_SIZE 1024 // need to be changed ?
 
 int waited_seqnum = 0; // the waited seqnum
-int window_size = 5; // the size of the window
+int window_size = 1; // the size of the window
 
 /*
  * Sends the packet pkt to be an ack
@@ -61,7 +61,7 @@ int send_ack(pkt_t* pkt, int sfd){
  * Computes an ack with a seqnum, a type and a window
  * @return: the new pkt, NULL in case of error
  */
-pkt_t* create_ack(int seqnum, int type, int new_window){
+pkt_t* create_ack(int seqnum, int type, int list_size){
 	pkt_t* new = pkt_new();
 	if(!new){
 		return NULL;
@@ -69,7 +69,8 @@ pkt_t* create_ack(int seqnum, int type, int new_window){
 	pkt_set_type(new, type);
 	pkt_set_seqnum(new, seqnum);
 	pkt_set_payload(new, NULL, 0);
-	pkt_set_window(new, new_window);
+	window_size = MAX_WINDOW_SIZE - list_size;
+	pkt_set_window(new, window_size);
 	return new;
 }
 
@@ -185,7 +186,7 @@ int write_in_sequence(list_t* list, int sfd, int fd){
 			pkt_t* detrop = NULL;
 			pop_element_queue(list, detrop);
 
-			pkt_t* ack = create_ack(waited_seqnum, PTYPE_ACK, window_size);
+			pkt_t* ack = create_ack(waited_seqnum, PTYPE_ACK, list->size);
 			//send_ack(ack, sfd);
 
 			pkt_del(detrop); //detrop == packet
@@ -233,7 +234,7 @@ int read_to_list_r(list_t* list, int sfd, int fd){
 			if(pkt_get_tr(pkt) == 1){
 				// packet troncated
 				fprintf(stderr, "Packet was troncated\n");
-				pkt_t* nack = create_ack(pkt_get_seqnum(pkt), PTYPE_NACK, window_size);
+				pkt_t* nack = create_ack(pkt_get_seqnum(pkt), PTYPE_NACK, list->size);
 				if(!nack){
 					fprintf(stderr, "Error while creating package, [rolr]\n");
 					pkt_del(pkt);
@@ -256,7 +257,7 @@ int read_to_list_r(list_t* list, int sfd, int fd){
 				}
 				else if(not_in_sequence == 1){ 
 					//if the first packet needed is still not here, we send an ack with the waited one
-					pkt_t* ack = create_ack(waited_seqnum, PTYPE_ACK, window_size);
+					pkt_t* ack = create_ack(waited_seqnum, PTYPE_ACK, list->size);
 					if(!ack){
 						fprintf(stderr, "Error while creating package, [rolr]\n");
 						pkt_del(pkt);
@@ -269,7 +270,7 @@ int read_to_list_r(list_t* list, int sfd, int fd){
 			else{
 				// out of window
 				pkt_del(pkt);
-				pkt_t* ack = create_ack(waited_seqnum, PTYPE_ACK, window_size);
+				pkt_t* ack = create_ack(waited_seqnum, PTYPE_ACK, list->size);
 				if(!ack){
 					fprintf(stderr, "Error while creating package, [rolr]\n");
 					pkt_del(pkt);
@@ -335,6 +336,8 @@ int process_receiver(int sfd, int fileOut){
 		max_fd = fileOut;
 
 	while(1){
+
+		fprintf(stderr, "%d\n", window_size );
 
 		FD_ZERO(&check_fd);
 		FD_SET(sfd, &check_fd);
