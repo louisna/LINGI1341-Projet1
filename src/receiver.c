@@ -5,7 +5,7 @@
 #include <sys/socket.h>
 #include <netdb.h>
 #include <netinet/in.h>
-#include <sys/stat.h> 
+#include <sys/stat.h>
 #include <sys/select.h>
 #include <time.h>
 #include <sys/time.h>
@@ -26,7 +26,7 @@ int window_size = 1; // the size of the window
  */
 int send_ack(pkt_t* pkt, int sfd){
 	printf("We send seqnum %d\n", pkt_get_seqnum(pkt));
-	time_t current_time = time(NULL);	
+	time_t current_time = time(NULL);
 	uint32_t  a_lo = (uint32_t) current_time;
 
 	pkt_status_code err1 = pkt_set_timestamp(pkt, a_lo);
@@ -42,7 +42,7 @@ int send_ack(pkt_t* pkt, int sfd){
 		length += sizeof(uint32_t);
 	}
 	char buff[length];
-				
+
 	pkt_status_code err2 = pkt_encode(pkt, buff, &length);
 	if(err2!=PKT_OK){
 		fprintf(stderr, "Error while using pkt_encode : error is %d\n",err2);
@@ -187,7 +187,7 @@ int write_in_sequence(list_t* list, int sfd, int fd){
 			pop_element_queue(list, detrop);
 
 			pkt_t* ack = create_ack(waited_seqnum, PTYPE_ACK, list->size);
-			//send_ack(ack, sfd);
+			send_ack(ack, sfd);
 
 			pkt_del(detrop); //detrop == packet
 
@@ -255,7 +255,7 @@ int read_to_list_r(list_t* list, int sfd, int fd){
 					fprintf(stderr, "EOF reached. End\n");
 					return -2;
 				}
-				else if(not_in_sequence == 1){ 
+				else if(not_in_sequence == 1){
 					//if the first packet needed is still not here, we send an ack with the waited one
 					pkt_t* ack = create_ack(waited_seqnum, PTYPE_ACK, list->size);
 					if(!ack){
@@ -282,7 +282,7 @@ int read_to_list_r(list_t* list, int sfd, int fd){
 			}
 
 		}
-		
+
 	}
 	return 0;
 }
@@ -295,7 +295,7 @@ int read_to_list_r(list_t* list, int sfd, int fd){
  */
 int wait_for_client(int sfd){
     char buffer[1024];
-    
+
     struct sockaddr_in6 sock;
     socklen_t len = sizeof(sock);
 
@@ -341,7 +341,7 @@ int process_receiver(int sfd, int fileOut){
 
 		FD_ZERO(&check_fd);
 		FD_SET(sfd, &check_fd);
-		
+
 		retval = select(max_fd+1, &check_fd, NULL, NULL, 0);
 
 		if(retval == -1){
@@ -410,11 +410,11 @@ int main(int argc, char* argv[]){
 			"- port: UDP port number where the sender was plugged\n");
 		exit(EXIT_FAILURE);
 	}
-	
+
 	host = argv[optind++];
 	port = atoi(argv[optind++]);
 
-	/*** Taken from chat.c of the INGInious problem 
+	/*** Taken from chat.c of the INGInious problem
 	     "envoyer et recevoir des donnes" ***/
 
 	if(file){
@@ -453,7 +453,7 @@ int main(int argc, char* argv[]){
 	printf("Succeded\n");
 	process_receiver(sfd, fd);
 
-	
+
 
 	return EXIT_SUCCESS;
 }
