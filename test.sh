@@ -4,10 +4,10 @@
 rm -f received_file input_file
 
 # Fichier au contenu aléatoire de 512 octets
-dd if=/dev/urandom of=input_file bs=1 count=512 &> /dev/null
+dd if=/dev/urandom of=input_file bs=1 count=2048 &> /dev/null
 
 # On lance le simulateur de lien avec 10% de pertes et un délais de 50ms
-./LINGI1341-linksim-master/link_sim -p 1341 -P 2456 -l 50 -d 50 -R  &> link.log &
+./LINGI1341-linksim-master/link_sim -p 1341 -P 2456 -l 50 -d 20 -R  &> link.log &
 link_pid=$!
 
 # On lance le receiver et capture sa sortie standard

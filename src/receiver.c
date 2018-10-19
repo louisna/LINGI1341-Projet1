@@ -346,8 +346,10 @@ int process_receiver(int sfd, int fileOut){
 		tv.tv_sec = 20;
 		tv.tv_usec = 0;
 		retval = select(max_fd+1, &check_fd, NULL, NULL, &tv);
+		tv.tv_sec = 20;
+		tv.tv_usec = 0;
 		if(retval==0){
-			fprintf(stderr, "EOF confirmed\n");
+			fprintf(stderr, "EOF confirmed 1\n");
 			break;
 		}
 		if(retval == -1){

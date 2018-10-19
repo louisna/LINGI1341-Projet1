@@ -14,7 +14,7 @@
 #include "nyancat.h"
 #include "packet_implement.h"
 #define MAX_READ_SIZE 528 // need to be changed ?
-#define RETRANSMISSION_TIMER 2 // pour l'instant
+#define RETRANSMISSION_TIMER 1 // pour l'instant
 //#define MAX_WINDOW_SIZE 31;
 
 
@@ -78,7 +78,8 @@ int packet_checked(list_t* list, int seqnum_ack){
     	if(seqn>=seqnum_ack){
     		return 0;
     	}
-    	if(seqn == seqnum_EOF+1){
+    	if(list->size == 1 && pkt_get_length(packet) == 0){
+    		fprintf(stderr, "Liste taille 1 + longueur 0 = END\n");
     		// EOF reached
     		return 1;
     	}
@@ -186,6 +187,10 @@ int check_timeout(list_t* list, int sfd){
 		pkt_t* packet = runner->packet;
 		uint32_t time_sent = pkt_get_timestamp(packet);
 		if(a_lo - time_sent >= RETRANSMISSION_TIMER){
+			if(pkt_get_length(packet) == 0 && seqnum_EOF >= 0 && list->size == 1){
+				fprintf(stderr, "Assuming that the EOF has been accepted by the receiver\n");
+				return 1;
+			}
 			printf("Packet seqnum %d was timeout, sent\n", pkt_get_seqnum(packet));
 			int err = send_packet(packet, sfd);
 			count++;
@@ -257,13 +262,6 @@ void read_to_list(int fd, list_t* list, int sfd){
 				if(err6){
 					fprintf(stderr, "Error while sending the packet for the first time\n");
 				}
-				if(readed == 0){
-					close(sfd);
-					if(fd != 0)
-						close(fd);
-					exit(EXIT_SUCCESS);
-				}
-
 
 				//On l'ajoute à la window
 				int err = add_element_queue(list, pkt);
@@ -318,14 +316,16 @@ int process_sender(int sfd, int fileIn){
 				break;
 			}
 		}
-		else if(FD_ISSET(fileIn, &check_fd)){
+		else if(FD_ISSET(fileIn, &check_fd) && seqnum_EOF < 0){
 			//seqnum = read_to_list(fileIn, list, int window, seqnum, sfd ){
 			// Read from fileIn, create packet,
 			// reprendre le time
 			//pas oublier de stopper le renvoi de timeout à la fin de la window size
 			read_to_list(fileIn, list, sfd);
 		}
-		check_timeout(list,sfd);
+		int time_out = check_timeout(list,sfd);
+		if(time_out == 1)
+			break;
 
 
 	}
@@ -426,6 +426,8 @@ int main(int argc, char* argv[]){
 
 
 	close(sfd);
+	if(fd != 0)
+		close(fd);
 
 	return EXIT_SUCCESS;
 }
