@@ -14,7 +14,7 @@
 #include "nyancat.h"
 #include "packet_implement.h"
 #define MAX_READ_SIZE 528 // need to be changed ?
-#define RETRANSMISSION_TIMER 5 // pour l'instant
+#define RETRANSMISSION_TIMER 2 // pour l'instant
 //#define MAX_WINDOW_SIZE 31;
 
 
@@ -70,7 +70,6 @@ int packet_checked(list_t* list, int seqnum_ack){
     node_t* runner = list->head;
     pkt_t* packet ;
     int seqn;
-    printf("WE ARE ICI\n");
 
     while(runner != NULL){
 
@@ -94,7 +93,6 @@ int packet_checked(list_t* list, int seqnum_ack){
         }
         pkt_del(packet_pop);
     }
-    printf("ARENT WE HERE \n");
     return 0;
 
 }
@@ -128,12 +126,6 @@ int check_ack(int sfd, list_t* list){
     }
 
     char buffer[MAX_READ_SIZE];
-		int err_recv = recv(sfd, NULL, 0, MSG_PEEK);
-		if(err_recv == -1){
-			fprintf(stderr, "Not ack ?\n");
-			fprintf(stderr, "%s\n", strerror(errno));
-			return 0;
-		}
     int readed = recv(sfd, buffer, MAX_READ_SIZE, 0);
     if(readed == -1){
         fprintf(stderr, "Error while receving ack [check_ack]\n");

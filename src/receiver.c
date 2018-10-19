@@ -25,7 +25,7 @@ int window_size = 1; // the size of the window
  * @return 0 in case of success, 0 otherwise
  */
 int send_ack(pkt_t* pkt, int sfd){
-	printf("We send seqnum %d\n", pkt_get_seqnum(pkt));
+	fprintf(stderr, "We send seqnum %d\n", pkt_get_seqnum(pkt));
 	time_t current_time = time(NULL);
 	uint32_t  a_lo = (uint32_t) current_time;
 
@@ -418,7 +418,7 @@ int main(int argc, char* argv[]){
 	     "envoyer et recevoir des donnes" ***/
 
 	if(file){
-		fd = open(file, O_RDWR);
+		fd = open(file, O_WRONLY|O_CREAT|O_TRUNC, S_IRUSR|S_IWUSR);
 		if(fd < 0){
 			fprintf(stderr, "Impossible to open the file %s. Using now stdin\n", file);
 			fd = STDOUT_FILENO;
