@@ -20,7 +20,8 @@
 
 int seqnum = 0; // the waited seqnum
 int window_size = 1; // the size of the window
-int seqnum_EOF = -100;
+int seqnum_EOF = 0;
+pkt_t* pkt_fin = NULL;
 
 
 /*
@@ -30,6 +31,7 @@ int seqnum_EOF = -100;
  * @return: -1 in case of error, 0 otherwise
  */
 int send_packet(pkt_t* pkt, int sfd){
+	fprintf(stderr, "J'envoie le paquer %d de taille %d\n", pkt_get_seqnum(pkt), pkt_get_length(pkt));
 	time_t current_time = time(NULL);
 	uint32_t  a_lo = (uint32_t) current_time;
 
@@ -78,7 +80,7 @@ int packet_checked(list_t* list, int seqnum_ack){
     	if(seqn>=seqnum_ack){
     		return 0;
     	}
-    	if(list->size == 1 && pkt_get_length(packet) == 0){
+    	if(list->size == 1 && pkt_get_length(packet) == 0 && seqnum_EOF == 1){
     		fprintf(stderr, "Liste taille 1 + longueur 0 = END\n");
     		// EOF reached
     		return 1;
@@ -187,7 +189,7 @@ int check_timeout(list_t* list, int sfd){
 		pkt_t* packet = runner->packet;
 		uint32_t time_sent = pkt_get_timestamp(packet);
 		if(a_lo - time_sent >= RETRANSMISSION_TIMER){
-			if(pkt_get_length(packet) == 0 && seqnum_EOF >= 0 && list->size == 1){
+			if(pkt_get_length(packet) == 0 && seqnum_EOF == 1 && list->size == 1){
 				fprintf(stderr, "Assuming that the EOF has been accepted by the receiver\n");
 				return 1;
 			}
@@ -249,7 +251,9 @@ void read_to_list(int fd, list_t* list, int sfd){
 				err5 = pkt_set_payload(pkt, payload, readed);
 				if(readed == 0){
 					fprintf(stderr, "EOF reached. End \n");
-					seqnum_EOF = seqnum;
+					seqnum_EOF = 1;
+					err1 = pkt_set_seqnum(pkt, seqnum - 1);
+					pkt_fin = pkt;
 				}
 				//}
 				//else supprimé à check, on devrait pas renvoyer le seqnum -1 simplement ?
@@ -258,19 +262,37 @@ void read_to_list(int fd, list_t* list, int sfd){
 				}
 
 				//On envoie le packet
-				int err6 = send_packet(pkt,sfd);
-				if(err6){
-					fprintf(stderr, "Error while sending the packet for the first time\n");
+				if(seqnum_EOF == 0){
+					int err6 = send_packet(pkt,sfd);
+					if(err6){
+						fprintf(stderr, "Error while sending the packet for the first time\n");
+					}
 				}
 
 				//On l'ajoute à la window
-				int err = add_element_queue(list, pkt);
-				if(err){
-					fprintf(stderr, "Error while adding the packet to the queue, discarded\n");
+				if(seqnum_EOF == 0){
+					int err = add_element_queue(list, pkt);
+					if(err){
+						fprintf(stderr, "Error while adding the packet to the queue, discarded\n");
+					}
+					seqnum = (seqnum + 1)%256; // 256 ?
 				}
-				seqnum = (seqnum + 1)%256; // 256 ?
 			}
 		}
+}
+
+int final_send(list_t* list, int sfd){
+	if(list->size == 0){
+		// tous les elements ont ete envoyes
+		// juste a send le packet
+		int err = send_packet(pkt_fin, sfd);
+		if(err){
+			fprintf(stderr, "Final packet could not be sent\n");
+			return -1;
+		}
+		return 0;
+	}
+	return 1;
 }
 
 
@@ -316,16 +338,26 @@ int process_sender(int sfd, int fileIn){
 				break;
 			}
 		}
-		else if(FD_ISSET(fileIn, &check_fd) && seqnum_EOF < 0){
+		else if(FD_ISSET(fileIn, &check_fd) && seqnum_EOF == 0){
 			//seqnum = read_to_list(fileIn, list, int window, seqnum, sfd ){
 			// Read from fileIn, create packet,
 			// reprendre le time
 			//pas oublier de stopper le renvoi de timeout à la fin de la window size
 			read_to_list(fileIn, list, sfd);
 		}
+		if(seqnum_EOF == 1){
+			int fin = final_send(list, sfd);
+			if(fin == 0){
+				fprintf(stderr, "End from read_to_list\n");
+				break;
+			}
+		}
 		int time_out = check_timeout(list,sfd);
-		if(time_out == 1)
+		if(time_out == 1){
+			fprintf(stderr, "Ack useless at this point. End\n");
 			break;
+		}
+
 
 
 	}

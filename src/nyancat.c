@@ -195,6 +195,8 @@ int add_specific_queue(list_t* list, pkt_t* packet){
             runner = runner->next;
         }
         if(pkt_get_seqnum(pkt_runner) == seqnum){
+            pkt_del(packet);
+            free(new_node);
             //alreadyin buffer
             return 0;
         }

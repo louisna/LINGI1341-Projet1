@@ -174,6 +174,7 @@ int write_in_sequence(list_t* list, int sfd, int fd){
 	while(runner != NULL){
 		packet = runner->packet;
 		if(pkt_get_seqnum(packet) == waited_seqnum){
+			fprintf(stderr, "Je write en sequence le numero %d de longueur %d\n", pkt_get_seqnum(packet), pkt_get_length(packet));
 			int writed = write(fd, pkt_get_payload(packet), pkt_get_length(packet));
 			if(writed == -1){
 				fprintf(stderr, "Impossible to write on fd\n");
@@ -189,12 +190,22 @@ int write_in_sequence(list_t* list, int sfd, int fd){
 			pkt_t* ack = create_ack(waited_seqnum, PTYPE_ACK, list->size);
 			send_ack(ack, sfd);
 
-			pkt_del(detrop); //detrop == packet
+			int seq_final;
+			if(waited_seqnum == 0)
+				seq_final = 255;
+			else
+				seq_final = waited_seqnum - 1;
 
-			if(pkt_get_length(packet) == 0){
+			if(list->size == 0 && pkt_get_length(packet) == 0 && pkt_get_seqnum(packet) == seq_final){
+				fprintf(stderr, "Sending the final ack\n");
 				// finish
 				return -10;
 			}
+			//else{
+			//	fprintf(stderr, "Ce qui ne va pas: %d %d %d\n", list->size, pkt_get_length(packet), pkt_get_seqnum(packet) == seq_final);
+			//}
+
+			pkt_del(detrop); //detrop == packet
 		}
 		else
 			return 0; // not the waited
@@ -315,6 +326,18 @@ int wait_for_client(int sfd){
     return 0;
 }
 
+void print_list(list_t* list){
+	fprintf(stderr, "Debut liste\n");
+	node_t* runner = list->head;
+	int count = 0;
+	while(runner != NULL){
+		pkt_t* pkt = runner->packet;
+		fprintf(stderr, "%d: seqnum de %d et de taille %d\n", count++, pkt_get_seqnum(pkt), pkt_get_length(pkt));
+		runner = runner->next;
+	}
+	fprintf(stderr, "Fin liste\n");
+}
+
 /*
  * Global process
  */
@@ -343,10 +366,12 @@ int process_receiver(int sfd, int fileOut){
 		FD_SET(sfd, &check_fd);
 
 		struct timeval tv;
-		tv.tv_sec = 20;
+		tv.tv_sec = 10;
 		tv.tv_usec = 0;
 		retval = select(max_fd+1, &check_fd, NULL, NULL, &tv);
-		tv.tv_sec = 20;
+		fprintf(stderr, "Valeur de ma liste: %d\n", list->size);
+		print_list(list);
+		tv.tv_sec = 10;
 		tv.tv_usec = 0;
 		if(retval==0){
 			fprintf(stderr, "EOF confirmed 1\n");
@@ -372,14 +397,6 @@ int process_receiver(int sfd, int fileOut){
 	}
 
 	return 0;
-}
-
-void print_list(list_t* list){
-	node_t* runner = list->head;
-	while(runner != NULL){
-		print_data(runner->packet);
-		runner = runner->next;
-	}
 }
 
 int main(int argc, char* argv[]){

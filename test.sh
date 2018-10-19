@@ -7,7 +7,7 @@ rm -f received_file input_file
 dd if=/dev/urandom of=input_file bs=1 count=2048 &> /dev/null
 
 # On lance le simulateur de lien avec 10% de pertes et un délais de 50ms
-./LINGI1341-linksim-master/link_sim -p 1341 -P 2456 -l 50 -d 20 -R  &> link.log &
+./LINGI1341-linksim-master/link_sim -p 1341 -P 2456 -l 70 -d 20 -R  &> link.log &
 link_pid=$!
 
 # On lance le receiver et capture sa sortie standard
@@ -29,7 +29,7 @@ if ! ./sender ::1 1341 < input_file 2> sender.log ; then
   err=1  # On enregistre l'erreur
 fi
 
-sleep 5 # On attend 5 seconde que le receiver finisse
+sleep 12 # On attend 5 seconde que le receiver finisse
 
 if kill -0 $receiver_pid &> /dev/null ; then
   echo "Le receiver ne s'est pas arreté à la fin du transfert!"
