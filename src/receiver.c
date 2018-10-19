@@ -342,13 +342,18 @@ int process_receiver(int sfd, int fileOut){
 		FD_ZERO(&check_fd);
 		FD_SET(sfd, &check_fd);
 
-		retval = select(max_fd+1, &check_fd, NULL, NULL, 0);
-
+		struct timeval tv;
+		tv.tv_sec = 20;
+		tv.tv_usec = 0;
+		retval = select(max_fd+1, &check_fd, NULL, NULL, &tv);
+		if(retval==0){
+			fprintf(stderr, "EOF confirmed\n");
+			break;
+		}
 		if(retval == -1){
 			fprintf(stderr, "Error from select [process_receiver]\n");
 			return -1; // vraiment ?
 		}
-
 		else if(FD_ISSET(sfd, &check_fd)){
 			// read from sfd
 			// check if in sequence
@@ -453,7 +458,9 @@ int main(int argc, char* argv[]){
 	printf("Succeded\n");
 	process_receiver(sfd, fd);
 
-
+	if(fd!=1){
+		close(fd);
+	}
 
 	return EXIT_SUCCESS;
 }
