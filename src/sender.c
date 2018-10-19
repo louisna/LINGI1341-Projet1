@@ -5,11 +5,12 @@
 #include <sys/socket.h>
 #include <netdb.h>
 #include <netinet/in.h>
-#include <sys/stat.h> 
+#include <sys/stat.h>
 #include <sys/select.h>
 #include <time.h>
 #include <sys/time.h>
 #include <fcntl.h>
+#include <errno.h>
 #include "nyancat.h"
 #include "packet_implement.h"
 #define MAX_READ_SIZE 528 // need to be changed ?
@@ -29,7 +30,7 @@ int seqnum_EOF = -100;
  * @return: -1 in case of error, 0 otherwise
  */
 int send_packet(pkt_t* pkt, int sfd){
-	time_t current_time = time(NULL);	
+	time_t current_time = time(NULL);
 	uint32_t  a_lo = (uint32_t) current_time;
 
 	pkt_status_code err1 = pkt_set_timestamp(pkt, a_lo);
@@ -44,7 +45,7 @@ int send_packet(pkt_t* pkt, int sfd){
 		length += sizeof(uint32_t);
 	}
 
-	char buff[length];				
+	char buff[length];
 	pkt_status_code err2 = pkt_encode(pkt, buff, &length);
 	if(err2!=PKT_OK){
 		fprintf(stderr, "Error while using pkt_encode : error is %d\n",err2);
@@ -118,15 +119,21 @@ void send_specific_pkt(int sfd, list_t* list, int seqn){
  * @sfd: the socket file descriptor
  * @list: the linked-list with all the packets
  * @last_seqnum: the seqnum of the last element of the window+1
- * @window: a pointer to the actual window size, may change with 
+ * @window: a pointer to the actual window size, may change with
  */
 int check_ack(int sfd, list_t* list){
     if(list == NULL){
-        fprintf(stderr, "List NULL [chack_ack]\n");
+        fprintf(stderr, "List NULL [check_ack]\n");
         return -1;
     }
 
     char buffer[MAX_READ_SIZE];
+		int err_recv = recv(sfd, NULL, 0, MSG_PEEK);
+		if(err_recv == -1){
+			fprintf(stderr, "Not ack ?\n");
+			fprintf(stderr, "%s\n", strerror(errno));
+			return 0;
+		}
     int readed = recv(sfd, buffer, MAX_READ_SIZE, 0);
     if(readed == -1){
         fprintf(stderr, "Error while receving ack [check_ack]\n");
@@ -162,7 +169,7 @@ int check_ack(int sfd, list_t* list){
                 }
             }
             else if(pkt_get_type(pkt) == PTYPE_NACK){ // devoir juste retirer l'element specifique ?
-                
+
             }
             else{
                 fprintf(stderr, "Wrong type of ack packet [check_ack]\n");
@@ -178,7 +185,7 @@ int check_ack(int sfd, list_t* list){
 }
 
 int check_timeout(list_t* list, int sfd){
-	time_t current_time = time(NULL);	
+	time_t current_time = time(NULL);
 	uint32_t  a_lo = (uint32_t) current_time;
 	int count = 0;
 
@@ -233,7 +240,7 @@ void read_to_list(int fd, list_t* list, int sfd){
 			pkt_t* pkt = pkt_new();
 			if(!pkt){
 				fprintf(stderr, "Impossible to create the pkt [read_to_list]\n");
-			}	
+			}
 			else{
 				int err1 = 0;
 				int err2 = pkt_set_type(pkt, PTYPE_DATA);
@@ -264,7 +271,7 @@ void read_to_list(int fd, list_t* list, int sfd){
 						close(fd);
 					exit(EXIT_SUCCESS);
 				}
-				
+
 
 				//On l'ajoute à la window
 				int err = add_element_queue(list, pkt);
@@ -272,7 +279,7 @@ void read_to_list(int fd, list_t* list, int sfd){
 					fprintf(stderr, "Error while adding the packet to the queue, discarded\n");
 				}
 				seqnum = (seqnum + 1)%256; // 256 ?
-			}	
+			}
 		}
 }
 
@@ -297,7 +304,7 @@ int process_sender(int sfd, int fileIn){
 	int max_fd = sfd > fileIn ? sfd : fileIn;
 
 	while(1){
-		fprintf(stderr, "%d\n",window_size );
+		//fprintf(stderr, "%d\n",window_size );
 
 		FD_ZERO(&check_fd);
 		FD_SET(sfd, &check_fd);
@@ -327,7 +334,7 @@ int process_sender(int sfd, int fileIn){
 			read_to_list(fileIn, list, sfd);
 		}
 		check_timeout(list,sfd);
-		
+
 
 	}
 
@@ -378,11 +385,11 @@ int main(int argc, char* argv[]){
 			"- port: UDP port number where the sender was plugged\n");
 		exit(EXIT_FAILURE);
 	}
-	
+
 	host = argv[optind++];
 	port = atoi(argv[optind++]);
 
-	/*** Taken from chat.c of the INGInious problem 
+	/*** Taken from chat.c of the INGInious problem
 	     "envoyer et recevoir des donnes" ***/
 
 	if(file){
@@ -418,7 +425,7 @@ int main(int argc, char* argv[]){
 	pkt_set_payload(pkt, a, 5);
 	send_packet(pkt, sfd);
 	*/
-	
+
 
 	// tests
 
