@@ -88,9 +88,8 @@ int packet_checked(list_t* list, int seqnum_ack){
 
         runner = runner->next;
 
-        pkt_t* packet_pop = NULL;
-        int err = pop_element_queue(list, packet_pop);
-        if(err){
+        pkt_t* packet_pop = pop_element_queue(list);
+        if(packet_pop == NULL){
             fprintf(stderr, "List was in fact empty [packet_checked]\n");
             return -1;
         }
@@ -144,6 +143,7 @@ int check_ack(int sfd, list_t* list){
             int err = pkt_decode(buffer, readed, pkt);
             if(err){
             	fprintf(stderr, "Impossible to decode teh package [check_ack]\n");
+            	pkt_del(pkt);
             	return -1;
             }
             window_size = pkt_get_window(pkt);
@@ -161,6 +161,7 @@ int check_ack(int sfd, list_t* list){
                 }
                 else if(err == 1){
                 	fprintf(stderr, "EOF reached\n");
+                	pkt_del(pkt);
                 	return 1;
                 }
             }
@@ -203,6 +204,7 @@ int check_timeout(list_t* list, int sfd){
 		if(a_lo - time_sent >= RETRANSMISSION_TIMER){
 			if(pkt_get_length(packet) == 0 && seqnum_EOF == 1 && list->size == 1){
 				fprintf(stderr, "Assuming that the EOF has been accepted by the receiver\n");
+				pkt_del(pkt_fin);
 				return 1;
 			}
 			//printf("Packet seqnum %d was timeout, sent\n", pkt_get_seqnum(packet));
@@ -304,6 +306,7 @@ int final_send(list_t* list, int sfd){
 			fprintf(stderr, "Final packet could not be sent\n");
 			return -1;
 		}
+		pkt_del(pkt_fin);
 		return 0;
 	}
 	return 1;
@@ -374,7 +377,7 @@ int process_sender(int sfd, int fileIn){
 
 
 	}
-
+	free(list);
 	// End of the process
 	return 0;
 }

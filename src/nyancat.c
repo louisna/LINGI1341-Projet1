@@ -95,14 +95,14 @@ int add_element_queue(list_t* list, pkt_t* packet){
     }
 }
 
-int pop_element_queue(list_t* list, pkt_t* packet){
+pkt_t* pop_element_queue(list_t* list){
     if(list->size==0){
         fprintf(stderr, "Empty list [pop element queue]\n");
-        return -1;
+        return NULL;
     }
     else{
         node_t * head = list->head;
-        packet = head->packet;
+        pkt_t* p = head->packet;
 
         if(list->size==1){
             list->head = NULL;
@@ -114,18 +114,11 @@ int pop_element_queue(list_t* list, pkt_t* packet){
             list->size--;
         }
         free(head);
-        return 0;
+        return p;
     }
 }
 
-/*
- * Adds the packet at the right place in the list (compare with seqnum)
- * @list: the list
- * @packet: the packet to be added
- * @return: -1 in case of error, 0 if the packet has been added correctly
- */
 int add_specific_queue(list_t* list, pkt_t* packet){
-    fprintf(stderr, "Coming in add specific queue\n");
     node_t * new_node = (node_t*) malloc(sizeof(node_t));
     if(new_node==NULL){
         fprintf(stderr, "Not enough memory [add element queue]\n");

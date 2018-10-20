@@ -81,7 +81,7 @@ int add_element_queue(list_t* list, pkt_t* packet);
  * @packet: the packet to be removed from the head of the list
  * @return: -1 in case of error, 0 otherwise
  */
-int pop_element_queue(list_t* list, pkt_t* packet);
+pkt_t* pop_element_queue(list_t* list);
 
 /*
  * Adds the packet at the right place in the list (compare with seqnum)

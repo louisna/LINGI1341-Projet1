@@ -37,7 +37,7 @@ pkt_t* pkt_new()
 void pkt_del(pkt_t *pkt)
 {
     if(pkt!=NULL){
-        if(pkt->length>0 && pkt->payload!=NULL)
+        if(pkt->length>0 || pkt->payload!=NULL)
             free(pkt->payload);
 
         free(pkt);
@@ -321,7 +321,7 @@ pkt_status_code pkt_set_payload(pkt_t *pkt, const char *data, const uint16_t len
         return E_LENGTH;
     }
 
-    if(pkt->length){
+    if(pkt->length > 0){
         free(pkt->payload);
         pkt->length = 0;
     }

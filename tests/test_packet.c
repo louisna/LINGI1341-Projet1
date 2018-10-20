@@ -1,9 +1,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <CUnit/CUnit.h>
+#include <CUnit/Basic.h>
 #include <string.h>
 
-#include "packet_implement.h"
+#include "../src/packet_implement.h"
 
 /* test suites */
 int init_suite(void){
@@ -35,8 +36,6 @@ void test_pkt_get_set(){
 	CU_ASSERT_EQUAL(pkt_get_window(pkt), MAX_WINDOW_SIZE/2);
 
 	/* Test du seqnum */
-	CU_ASSERT_EQUAL(pkt_set_seqnum(pkt, 256), E_SEQNUM);
-	CU_ASSERT_EQUAL(pkt_set_seqnum(pkt, -1), E_SEQNUM);
 	CU_ASSERT_EQUAL(pkt_set_seqnum(pkt, 100), PKT_OK);
 	CU_ASSERT_EQUAL(pkt_get_seqnum(pkt), 100);
 
@@ -47,21 +46,20 @@ void test_pkt_get_set(){
 
 	/* Test du timestamp */
 	CU_ASSERT_EQUAL(pkt_set_timestamp(pkt, 1000), PKT_OK);
-	CU_ASSERT_EQUAL(pkt_get_length(pkt), 1000);
 
 	/* Test du payload */
-	char* payload = "test du payload"
+	char* payload = "test du payload";
 	int length = strlen(payload);
-	CU_ASSERT_EQUAL(pkt_set_payload(pkt, payload), PKT_OK);
+	CU_ASSERT_EQUAL(pkt_set_payload(pkt, payload, length), PKT_OK);
 	CU_ASSERT_EQUAL(pkt_get_length(pkt), length);
 	int cmp = memcmp(pkt_get_payload(pkt), payload, length);
 	CU_ASSERT_EQUAL(cmp, 0);
 
 	char* payload2 = "test du payload";
-	payload = "verifie qu'on a bien un memcpy"
+	payload = "verifie qu'on a bien un memcpy";
 	cmp = memcmp(pkt_get_payload(pkt), payload, length);
 	CU_ASSERT_NOT_EQUAL(cmp, 0);
-	int cmp2 = memcmp(pkt_get_payload(pkt), payload2);
+	int cmp2 = memcmp(pkt_get_payload(pkt), payload2, length);
 	CU_ASSERT_EQUAL(cmp2, 0);
 
 	CU_ASSERT_EQUAL(pkt_set_payload(pkt, NULL, 0), PKT_OK);
@@ -87,21 +85,20 @@ void test_encode_decode(){
 	CU_ASSERT_EQUAL(pkt_set_tr(pkt, 0), PKT_OK);
 	CU_ASSERT_EQUAL(pkt_set_seqnum(pkt, 123), PKT_OK);
 	CU_ASSERT_EQUAL(pkt_set_window(pkt, 10), PKT_OK);
-	char* payload = "decode"
-	int length = strlen(decode);
-	CU_ASSERT_EQUAL(pkt_set_payload(pkt, payload), PKT_OK);
+	char* payload = "decode";
+	int length = strlen(payload);
+	CU_ASSERT_EQUAL(pkt_set_payload(pkt, payload, length), PKT_OK);
 
 	CU_ASSERT_EQUAL(pkt_set_timestamp(pkt, 123456), PKT_OK);
 
 	size_t len_buffer = 50;
 	size_t wrong = 10;
-	char buffer[len_buffer]
+	char buffer[len_buffer];
 	CU_ASSERT_EQUAL(pkt_encode(pkt, buffer, &wrong), E_NOMEM);
-	CU_ASSERT_EQUAL(pkt_encore(pkt, buffer, &len_buffer), PKT_OK);
+	CU_ASSERT_EQUAL(pkt_encode(pkt, buffer, &len_buffer), PKT_OK);
 
 	pkt_t* pkt_verif = pkt_new();
 
-	CU_ASSERT_EQUAL(pkt_decode(buffer, len_buffer, NULL), E_UNCONSISTENT);
 	CU_ASSERT_EQUAL(pkt_decode(buffer, len_buffer, pkt_verif), PKT_OK);
 
 	CU_ASSERT_EQUAL(pkt_get_type(pkt), 1);
@@ -109,7 +106,7 @@ void test_encode_decode(){
 	CU_ASSERT_EQUAL(pkt_get_seqnum(pkt), 123);
 	CU_ASSERT_EQUAL(pkt_get_window(pkt), 10);
 	CU_ASSERT_EQUAL(pkt_get_length(pkt), length);
-	int cmp = memcpy(buffer, pkt_get_payload(pkt));
+	int cmp = memcmp(payload, pkt_get_payload(pkt), length);
 	CU_ASSERT_EQUAL(cmp, 0);
 	CU_ASSERT_EQUAL(pkt_get_timestamp(pkt), 123456);
 

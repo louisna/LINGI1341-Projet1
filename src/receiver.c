@@ -130,11 +130,11 @@ int write_in_sequence(list_t* list, int sfd, int fd){
 			previous = runner;
 			runner = runner->next;
 
-			pkt_t* detrop = NULL;
-			pop_element_queue(list, detrop);
+			pkt_t* detrop = pop_element_queue(list);
 
 			pkt_t* ack = create_ack(waited_seqnum, PTYPE_ACK, list->size);
 			send_ack(ack, sfd);
+			pkt_del(ack);
 
 			int seq_final;
 			if(waited_seqnum == 0)
@@ -151,7 +151,7 @@ int write_in_sequence(list_t* list, int sfd, int fd){
 			//	fprintf(stderr, "Ce qui ne va pas: %d %d %d\n", list->size, pkt_get_length(packet), pkt_get_seqnum(packet) == seq_final);
 			//}
 
-			pkt_del(detrop); //detrop == packet
+			pkt_del(packet); //detrop == packet
 		}
 		else
 			return 0; // not the waited
@@ -209,10 +209,12 @@ int read_to_list_r(list_t* list, int sfd, int fd){
 				int not_in_sequence = write_in_sequence(list, sfd, fd); // writes to fd and sends ack
 				if(not_in_sequence == -1){
 					fprintf(stderr, "Error write in sequence\n");
+					pkt_del(pkt);
 					return -1;
 				}
 				if(not_in_sequence == -10){
 					fprintf(stderr, "EOF reached. End\n");
+					pkt_del(pkt);
 					return -2;
 				}
 				else if(not_in_sequence == 1){
@@ -226,6 +228,18 @@ int read_to_list_r(list_t* list, int sfd, int fd){
 					send_ack(ack, sfd);
 					pkt_del(ack);
 				}
+			}
+			else if(pkt_get_seqnum(pkt) == waited_seqnum-1 && pkt_get_length(pkt) == 0 && pkt_get_type(pkt) == PTYPE_DATA){
+				pkt_t* ack = create_ack(waited_seqnum-1, PTYPE_DATA, list->size);
+				if(!ack){
+					fprintf(stderr, "Error while creating the last ack\n");
+					pkt_del(pkt);
+					return -1;
+				}
+				send_ack(ack, sfd);
+				pkt_del(ack);
+				pkt_del(pkt);
+				return -2;
 			}
 			else{
 				// out of window
@@ -350,7 +364,7 @@ int process_receiver(int sfd, int fileOut){
 			}
 		}
 	}
-
+	free(list);
 	return 0;
 }
 

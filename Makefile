@@ -34,10 +34,10 @@ test_packet.o: ./tests/test_packet.c ./src/packet_implement.h
 test_nyancat.o: ./tests/test_nyancat.c ./src/packet_implement.h ./src/nyancat.h
 	gcc -c ./tests/test_nyancat.c $(CFLAGS) -lcunit
 
-test_packet: test_packet.o
-	gcc -o test_packet test_packet.o  $(CFLAGS) -lcunit
-test_nyancat: test_nyancat.o
-	gcc -o test_nyancat test_nyancat.o $(CFLAGS) -lcunit
+test_packet: packet_implement.o
+	gcc -o test_packet tests/test_packet.c packet_implement.o  $(CFLAGS) -lcunit -lz
+test_nyancat: packet_implement.o nyancat.o
+	gcc -o test_nyancat tests/test_nyancat.c nyancat.o packet_implement.o $(CFLAGS) -lcunit -lz
 
 test : test_packet test_nyancat
 	./test_packet 

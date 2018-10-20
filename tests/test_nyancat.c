@@ -1,10 +1,11 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <CUnit/CUnit.h>
+#include <CUnit/Basic.h>
 #include <string.h>
 
-#include "nyancat.h"
-#include "packet_implement.h"
+#include "../src/nyancat.h"
+#include "../src/packet_implement.h"
 
 /* test suites */
 int init_suite(void){
@@ -40,55 +41,53 @@ void test_queue(){
 
 	CU_ASSERT_EQUAL(add_element_queue(list, pkt0), 0);
 	CU_ASSERT_EQUAL(list->size, 1);
-	CU_ASSERT_PTR_EQUAL(list->head, pkt0);
-	CU_ASSERT_EQUAL(list->tail, pkt0);
+	CU_ASSERT_PTR_EQUAL(list->head->packet, pkt0);
+	CU_ASSERT_PTR_EQUAL(list->tail->packet, pkt0);
 
 	CU_ASSERT_EQUAL(add_element_queue(list, pkt1), 0);
 	CU_ASSERT_EQUAL(list->size, 2);
-	CU_ASSERT_PTR_EQUAL(list->head, pkt0);
-	CU_ASSERT_EQUAL(list->tail, pkt1);
+	CU_ASSERT_PTR_EQUAL(list->head->packet, pkt0);
+	CU_ASSERT_EQUAL(list->tail->packet, pkt1);
 
 	CU_ASSERT_EQUAL(add_element_queue(list, pkt3), 0);
 	CU_ASSERT_EQUAL(list->size, 3);
-	CU_ASSERT_PTR_EQUAL(list->head, pkt0);
-	CU_ASSERT_EQUAL(list->tail, pkt3);
+	CU_ASSERT_PTR_EQUAL(list->head->packet, pkt0);
+	CU_ASSERT_EQUAL(list->tail->packet, pkt3);
 
 	CU_ASSERT_EQUAL(add_specific_queue(list, pkt2), 0);
 	CU_ASSERT_EQUAL(list->size, 4);
-	CU_ASSERT_PTR_EQUAL(list->head, pkt0);
-	CU_ASSERT_EQUAL(list->tail, pkt3);
+	CU_ASSERT_PTR_EQUAL(list->head->packet, pkt0);
+	CU_ASSERT_EQUAL(list->tail->packet, pkt3);
 
-	pkt_t* pktv0;
-	CU_ASSERT_EQUAL(pop_element_queue(list, pktv0), 0);
+	pkt_t* pktv0 = pop_element_queue(list);
 	CU_ASSERT_EQUAL(list->size, 3);
 	CU_ASSERT_PTR_EQUAL(pktv0, pkt0);
-	CU_ASSERT_PTR_EQUAL(list->head, pkt1);
-	CU_ASSERT_EQUAL(list->tail, pkt3);
+	CU_ASSERT_PTR_EQUAL(list->head->packet, pkt1);
+	CU_ASSERT_EQUAL(list->tail->packet, pkt3);
 	free(pktv0);
 
-	pkt_t* pktv1;
-	CU_ASSERT_EQUAL(pop_element_queue(list, pktv1), 0);
+	pkt_t* pktv1 = pop_element_queue(list);
 	CU_ASSERT_EQUAL(list->size, 2);
 	CU_ASSERT_PTR_EQUAL(pktv1, pkt1);
-	CU_ASSERT_PTR_EQUAL(list->head, pkt2);
-	CU_ASSERT_EQUAL(list->tail, pkt3);
+	CU_ASSERT_PTR_EQUAL(list->head->packet, pkt2);
+	CU_ASSERT_EQUAL(list->tail->packet, pkt3);
 	free(pktv1);
 
-	pkt_t* pktv2;
-	CU_ASSERT_EQUAL(pop_element_queue(list, pktv2), 0);
+	pkt_t* pktv2 = pop_element_queue(list);
 	CU_ASSERT_EQUAL(list->size, 1);
 	CU_ASSERT_PTR_EQUAL(pktv2, pkt2);
-	CU_ASSERT_PTR_EQUAL(list->head, pkt3);
-	CU_ASSERT_EQUAL(list->tail, pkt3);
+	CU_ASSERT_PTR_EQUAL(list->head->packet, pkt3);
+	CU_ASSERT_EQUAL(list->tail->packet, pkt3);
 	free(pktv2);
 
-	pkt_t* pktv3;
-	CU_ASSERT_EQUAL(pop_element_queue(list, pktv3), 0);
+	pkt_t* pktv3 = pop_element_queue(list);
 	CU_ASSERT_EQUAL(list->size, 0);
 	CU_ASSERT_PTR_EQUAL(pktv3, pkt3);
 	CU_ASSERT_PTR_EQUAL(list->head, NULL);
 	CU_ASSERT_EQUAL(list->tail, NULL);
 	free(pktv3);
+
+	free(list);
 
 }
 
