@@ -83,14 +83,12 @@ int add_element_queue(list_t* list, pkt_t* packet);
  */
 int pop_element_queue(list_t* list, pkt_t* packet);
 
-int pop_specific_element_queue(list_t* list, int seqnum);
 /*
-
-int add_ack_queue(lack_t* lack, int seqnum);
-
-int pop_ack_queue(lack_t* lack, int* seqnum);
-*/
-
+ * Adds the packet at the right place in the list (compare with seqnum)
+ * @list: the list
+ * @packet: the packet to be added
+ * @return: -1 in case of error, 0 if the packet has been successully added
+ */
 int add_specific_queue(list_t* list, pkt_t* packet);
 
 

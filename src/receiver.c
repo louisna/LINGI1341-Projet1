@@ -126,7 +126,7 @@ int write_in_sequence(list_t* list, int sfd, int fd){
 				fprintf(stderr, "Impossible to write on fd\n");
 				return -1;
 			}
-			waited_seqnum++;
+			waited_seqnum = (waited_seqnum + 1) % 256;
 			previous = runner;
 			runner = runner->next;
 

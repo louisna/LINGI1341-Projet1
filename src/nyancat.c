@@ -57,18 +57,7 @@ list_t* list_create(){
     }
     return list;
 }
-/*
-lack_t* lack_create(){
-    lack_t* lack = (lack_t*)calloc(1, sizeof(lack_t));
-    if(!lack){
-        fprintf(stderr, "Not enough memory [lack_create]\n");
-        return NULL;
-    }
-    return lack;
-}
-*/
 
-//longueur max de queue ?
 int add_element_queue(list_t* list, pkt_t* packet){
 
     node_t * new_node = (node_t*) malloc(sizeof(node_t));
@@ -117,57 +106,6 @@ int pop_element_queue(list_t* list, pkt_t* packet){
         return 0;
     }
 }
-/*
-
-int add_ack_queue(lack_t* lack, int seqnum){
-
-    nack_t * new_node = (nack_t*) malloc(sizeof(nack_t));
-    if(new_node==NULL){
-        fprintf(stderr, "Not enough memory [add element queue]\n");
-        return -1;
-    }
-    
-    new_node->seqnum = seqnum;
-    new_node->next = NULL;
-    
-    if(lack->size==0){//liste vide
-        lack->head = new_node;
-        lack->tail = new_node;
-        lack->size++;
-        return 0;
-    }
-    else{//liste pas vide
-        nack_t* tail = lack->tail;
-        tail->next = new_node;
-        lack->tail = new_node;
-        lack->size++;
-        return 0;
-    }
-}
-
-int pop_ack_queue(lack_t* lack, int* seqnum){
-    if(lack->size==0){
-        fprintf(stderr, "Empty list [pop element queue]\n");
-        return -1;
-    }
-    else{
-        nack_t * head = lack->head;
-        seqnum = head->seqnum;
-
-        if(lack->size==1){
-            lack->head = NULL;
-            lack->tail = NULL;
-            lack->size--;
-        }
-        else{
-            lack->head = lack->head->next;
-            lack->size--;
-        }
-        free(head);
-        return 0;
-    }
-}
-*/
 
 int add_specific_queue(list_t* list, pkt_t* packet){
     node_t * new_node = (node_t*) malloc(sizeof(node_t));
@@ -190,9 +128,25 @@ int add_specific_queue(list_t* list, pkt_t* packet){
         node_t* runner = list->head;
         pkt_t* pkt_runner = runner->packet;
         node_t* previous = NULL;
-        while(runner != NULL && pkt_get_seqnum(pkt_runner) < seqnum){ // PREND PAS EN COMPTE MODULO
+        int window_max = 31;
+        int cmp = 0;
+        if(pkt_get_seqnum(pkt_runner) - seqnum > window_max){
+            // passage 255->0
+            cmp = pkt_get_seqnum(pkt_runner) < seqnum + 255;
+        }
+        else{
+            cmp = pkt_get_seqnum(pkt_runner) < seqnum;
+        }
+        while(runner != NULL && cmp == 1){ // PREND PAS EN COMPTE MODULO
             previous = runner;
             runner = runner->next;
+            if(pkt_get_seqnum(pkt_runner) - seqnum > window_max){
+                // passage 255->0
+                cmp = pkt_get_seqnum(pkt_runner) < seqnum + 255;
+            }
+            else{
+                cmp = pkt_get_seqnum(pkt_runner) < seqnum;
+            }
         }
         if(pkt_get_seqnum(pkt_runner) == seqnum){
             pkt_del(packet);
@@ -213,37 +167,3 @@ int add_specific_queue(list_t* list, pkt_t* packet){
         return 0;
     }
 }
-
-
-int pop_specific_element_queue(list_t* list, int seqnum){
-    node_t* runner = list->head;
-    node_t* previous;
-    pkt_t* packet = runner->packet;
-    while(runner != NULL && pkt_get_seqnum(packet) < seqnum){
-        previous = runner;
-        runner = runner->next;
-        packet = runner->packet;
-    }
-    if(!runner){
-        fprintf(stderr, "Not found [pop_specific_element_queue]\n");
-        return -1; // not found
-    }
-    if(list->head == runner){ // is tail
-        pkt_t* pkt;
-        int err = pop_element_queue(list, pkt);
-        pkt_del(pkt);
-        if(err){
-            fprintf(stderr, "Error [pop_specific_element_queue]\n");
-            return -1;
-        }
-        return 0;
-    }
-    else{
-        previous->next = runner->next;
-        list->size--;
-        pkt_del(runner->packet);
-        free(runner);
-        return 0;
-    }
-}
-
