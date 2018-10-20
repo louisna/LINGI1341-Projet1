@@ -81,7 +81,7 @@ int packet_checked(list_t* list, int seqnum_ack){
     		return 0;
     	}
     	if(list->size == 1 && pkt_get_length(packet) == 0 && seqnum_EOF == 1){
-    		fprintf(stderr, "Liste taille 1 + longueur 0 = END\n");
+    		fprintf(stderr, "Last element of the list + length of 0 + EOf reached = END.\n");
     		// EOF reached
     		return 1;
     	}
@@ -121,6 +121,7 @@ void send_specific_pkt(int sfd, list_t* list, int seqn){
  * @list: the linked-list with all the packets
  * @last_seqnum: the seqnum of the last element of the window+1
  * @window: a pointer to the actual window size, may change with
+ * @return: -1 in case of error, 1 if the ack of the EOF paquet was received, 0 otherwise
  */
 int check_ack(int sfd, list_t* list){
     if(list == NULL){
@@ -146,10 +147,10 @@ int check_ack(int sfd, list_t* list){
             	return -1;
             }
             window_size = pkt_get_window(pkt);
-            printf("Window size: %d\n", window_size);
+            //printf("Window size: %d\n", window_size);
             int seqnum_ack = pkt_get_seqnum(pkt);
 
-            printf("Seqnum of the ack %d\n", seqnum_ack);
+            //printf("Seqnum of the ack %d\n", seqnum_ack);
 
 
             if(pkt_get_type(pkt) == PTYPE_ACK){
@@ -179,6 +180,17 @@ int check_ack(int sfd, list_t* list){
     return 0;
 }
 
+/*
+ * Checks all the elements of the list (window) and sends all the packets
+ * with timestamp - actual_time >= RETRANSMISSION TIMER
+ * If the last element to be acknoledged is the paket to indicate the EOF
+ * and this packet is on timeout, we assume that the ack has been lost
+ * and the receiver is already shut down.
+ * @list: the list
+ * @sfd: the socket file descriptor
+ * @return: 1 if the packet with EOF is the only remaining packet in the list
+ * 			to be acknoledged. 0 otherwise
+ */
 int check_timeout(list_t* list, int sfd){
 	time_t current_time = time(NULL);
 	uint32_t  a_lo = (uint32_t) current_time;
@@ -193,7 +205,7 @@ int check_timeout(list_t* list, int sfd){
 				fprintf(stderr, "Assuming that the EOF has been accepted by the receiver\n");
 				return 1;
 			}
-			printf("Packet seqnum %d was timeout, sent\n", pkt_get_seqnum(packet));
+			//printf("Packet seqnum %d was timeout, sent\n", pkt_get_seqnum(packet));
 			int err = send_packet(packet, sfd);
 			count++;
 			if(err){
@@ -218,9 +230,6 @@ int check_timeout(list_t* list, int sfd){
  * @return: the number of the new new_seqnum (same interpretation)
  * 			or -2 if EOF reached
  */
-
-// !!!!!!!!!!!!!!!!!!!! peut-etre changer new_seqnum par le dernier numero de sequence deja utilise ?
-// !!!!!!!!!!!!!!!!!!!! et retourner aussi le dernier deja utilise ? Peut-etre plus simple pour apres
 void read_to_list(int fd, list_t* list, int sfd){
 	if(!list){
 		fprintf(stderr, "BIG ERROR: list NULL!\n");
@@ -246,41 +255,46 @@ void read_to_list(int fd, list_t* list, int sfd){
 				int err3 = pkt_set_tr(pkt, 0);
 				int err4 = pkt_set_window(pkt, MAX_WINDOW_SIZE - list->size - 1);
 				int err5 = 0;
-				//if(readed > 0){
 				err1 = pkt_set_seqnum(pkt, seqnum);
 				err5 = pkt_set_payload(pkt, payload, readed);
+				
+				/* If it is a packet with EOF, we don't send it, but we update the pkt_fin */
 				if(readed == 0){
 					fprintf(stderr, "EOF reached. End \n");
 					seqnum_EOF = 1;
 					err1 = pkt_set_seqnum(pkt, seqnum - 1);
 					pkt_fin = pkt;
 				}
-				//}
 				//else supprimé à check, on devrait pas renvoyer le seqnum -1 simplement ?
 				if(err1 || err2 || err3 || err4 || err5){
 					fprintf(stderr, "Error while seting the pkt\n");
 				}
 
-				//On envoie le packet
+				// We send the packet if and only if it is not a packet with EOF
 				if(seqnum_EOF == 0){
 					int err6 = send_packet(pkt,sfd);
 					if(err6){
 						fprintf(stderr, "Error while sending the packet for the first time\n");
 					}
-				}
 
-				//On l'ajoute à la window
-				if(seqnum_EOF == 0){
+					// Add it to the window
 					int err = add_element_queue(list, pkt);
 					if(err){
 						fprintf(stderr, "Error while adding the packet to the queue, discarded\n");
 					}
-					seqnum = (seqnum + 1)%256; // 256 ?
+					seqnum = (seqnum + 1)%256; 
 				}
 			}
 		}
 }
 
+/*
+ * Sends the last packet only and only if the list is empty.
+ * @pre: seqnum_EOF == 1, the EOF was reached when reading
+ * @list: the list 
+ * @sfd: the socket file descriptor
+ * @return: 1 if the list was not empty, -1 in case of error, 0 otherwise
+ */
 int final_send(list_t* list, int sfd){
 	if(list->size == 0){
 		// tous les elements ont ete envoyes
@@ -294,8 +308,6 @@ int final_send(list_t* list, int sfd){
 	}
 	return 1;
 }
-
-
 
 /*
  * Function that will do the major part of the sender part
@@ -312,7 +324,6 @@ int process_sender(int sfd, int fileIn){
 	tv.tv_sec = RETRANSMISSION_TIMER;
 	tv.tv_usec = 0;
 
-	// check the maximum fd, may be fileIn ?
 	int max_fd = sfd > fileIn ? sfd : fileIn;
 
 	while(1){
@@ -345,6 +356,7 @@ int process_sender(int sfd, int fileIn){
 			//pas oublier de stopper le renvoi de timeout à la fin de la window size
 			read_to_list(fileIn, list, sfd);
 		}
+		/* We check if the EOF was readed */
 		if(seqnum_EOF == 1){
 			int fin = final_send(list, sfd);
 			if(fin == 0){
@@ -352,6 +364,7 @@ int process_sender(int sfd, int fileIn){
 				break;
 			}
 		}
+		/* We send all the packets with timeout */
 		int time_out = check_timeout(list,sfd);
 		if(time_out == 1){
 			fprintf(stderr, "Ack useless at this point. End\n");
@@ -362,10 +375,14 @@ int process_sender(int sfd, int fileIn){
 
 	}
 
+	// End of the process
 	return 0;
 }
 
-
+/*
+ * Debug function to print the data associated with all the packets in the window
+ *
+ */
 void print_list(list_t* list){
 	node_t* runner = list->head;
 	while(runner != NULL){
@@ -374,6 +391,9 @@ void print_list(list_t* list){
 	}
 }
 
+/*
+ * Main function. Handle the options and runs process_sender
+ */
 int main(int argc, char* argv[]){
 
 	/* default values */
@@ -442,18 +462,7 @@ int main(int argc, char* argv[]){
 		fprintf(stderr, "Failed to create the socket\n");
 		exit(EXIT_FAILURE);
 	}
-	/*
-
-	char* a = "Salut";
-	pkt_t* pkt = pkt_new();
-	pkt_set_payload(pkt, a, 5);
-	send_packet(pkt, sfd);
-	*/
-
-
-	// tests
-
-	// do something
+	
 	process_sender(sfd, fd);
 
 

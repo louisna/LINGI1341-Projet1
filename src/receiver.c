@@ -22,7 +22,7 @@ int window_size = 1; // the size of the window
  * Sends the packet pkt to be an ack
  * @pkt: the packet to be sent
  * @sfd: the socket file descriptor
- * @return 0 in case of success, 0 otherwise
+ * @return 0 in case of success, -1 otherwise
  */
 int send_ack(pkt_t* pkt, int sfd){
 	fprintf(stderr, "We send seqnum %d\n", pkt_get_seqnum(pkt));
@@ -59,6 +59,8 @@ int send_ack(pkt_t* pkt, int sfd){
 
 /*
  * Computes an ack with a seqnum, a type and a window
+ * The window is calculated the following:
+ *      MAX_WINDOW_SIZE - list_size
  * @return: the new pkt, NULL in case of error
  */
 pkt_t* create_ack(int seqnum, int type, int list_size){
@@ -75,76 +77,10 @@ pkt_t* create_ack(int seqnum, int type, int list_size){
 }
 
 /*
- * Givent list and first_seqnum, checks and create an ack for
- * each paket with a consecutive seqnum
- * @list: the list
- * @first_seqnum: the first seqnum of the ack
- * @sfd: the socket file descriptor
- * @return the seqnum of the last ack sent
+ * Checks if the seqnum from the packet received is in the window
+ * of the receiver
+ * @return: 1 if seqnum is in the window, 0 otherwise
  */
-/*
-int check_for_ack(list_t* list, int first_seqnum, int sfd){
-	node_t* runner = list->head;
-	pkt_t* pkt = runner->packet;
-	int previous = pkt_get_seqnum(pkt);
-	if(previous > first_seqnum){ // or first_seqnum + 1 ?
-		fprintf(stderr, "We lost the good ack... problem\n");
-		return 0; // we still have to wait for the last ack
-	}
-	while(runner != NULL){
-		pkt_t* pkt = runner->packet;
-		int actual = pkt_get_seqnum(pkt);
-		if((actual == 0 && previous == 255) || actual - first_seqnum <= 1){
-			// seqnum of the pkt is the extactly next of the previous
-			// we can send an ack for this pkt
-			pkt_t* ack;
-			int new_window = MAX_WINDOW_SIZE - list->size;
-			if(pkt_get_tr(pkt)){
-				ack = create_ack(actual, PTYPE_NACK, new_window);
-			}
-			else{
-				ack = create_ack(actual, PTYPE_ACK, new_window);
-			}
-			int err = send_ack(pkt, sfd);
-			if(err){
-				fprintf(stderr, "Impossible to send the ack %d\n", pkt_get_seqnum(pkt));
-			}
-			pkt_del(ack);
-			runner = runner->next;
-			first_seqnum++;
-		}
-		else{
-			return first_seqnum;
-		}
-	}
-	return first_seqnum;
-}
-*/
-
-/*
- * Free all the packets/nodes with a seqnum below the seqnum
- * @list: the list
- * @seqnum: the seqnum of the last ack (which must be keeped)
- */
-/*
-void free_packet_queue(list_t* list, int seqnum){
-	node_t* runner = list->head;
-	while(runner != NULL){
-		pkt_t* pkt = runner->packet;
-		int seq = pkt_get_seqnum(pkt);
-		if(seq >= seqnum){
-			return;
-		}
-		pkt_t* pkt2;
-		int err = pop_element_queue(list, pkt2);
-		if(err){
-			fprintf(stderr, "Erreur [free_packet_queue]\n");
-		}
-		pkt_del(pkt2);
-	}
-}
-*/
-
 int check_in_window(int seqnum){
 	if(seqnum >= waited_seqnum){ // pas de passage 255 -> 0
 		if(seqnum - waited_seqnum <= window_size)
@@ -160,8 +96,18 @@ int check_in_window(int seqnum){
 	}
 }
 /*
- * Returns 1 if waited_seqnum does not move, -1 error, 0 otherwise
- * -10 if EOF reached
+ * Writes on fd all the packets with the seqnum >= waited_seqnum.
+ * The waited_seqnum is updated (+1) when a packet is written on fd.
+ * The function then pop the element of the list and free the packet.
+ * For each of the packets in sequence, sends an ack with the corresponding seqnum.
+ * If the first element of the list has a seqnum > waited_seqnum, it means that
+ * the receiver has to wait for at least another packet. Then it sends an ack with the
+ * waited seqnum
+ * @list: the list
+ * @sfd: the socket file drscriptor
+ * @fd: the file descriptor to write in
+ * @return: 1 if the receiver has to wait for at least 1 packet in sequence, -1 in case of error
+ *          -10 if EOF received, 0 otherwise
  */
 int write_in_sequence(list_t* list, int sfd, int fd){
 	node_t* runner = list->head;
@@ -215,6 +161,9 @@ int write_in_sequence(list_t* list, int sfd, int fd){
 
 /*
  * Reads data from the sfd, and add the packets to the list
+ * If the packet readed has a seqnum out of the window, an ack is directly sent with the
+ * appropriate seqnum. If a NACK is received, we just ignore it. Else, we call write_in_sequence
+ * after we added the packet to the queue at the right place with add_specific_queue
  * @list: the list
  * @window: a pointer to update the window size
  * @seqnum: the seqnum of the first packet waited
@@ -326,6 +275,9 @@ int wait_for_client(int sfd){
     return 0;
 }
 
+/*
+ * Debug function to print the seqnum and length of all the packets in the list
+ */
 void print_list(list_t* list){
 	fprintf(stderr, "Debut liste\n");
 	node_t* runner = list->head;
@@ -339,7 +291,10 @@ void print_list(list_t* list){
 }
 
 /*
- * Global process
+ * Function that will do the major part of the receiver part
+ * @sfd: the file descriptor of the socket
+ * @fileOut: the file desctriptor where we will print the data
+ * @return: -1 in case of error, 0 otherwize
  */
 int process_receiver(int sfd, int fileOut){
 	fd_set check_fd; // for the function select()
@@ -399,6 +354,9 @@ int process_receiver(int sfd, int fileOut){
 	return 0;
 }
 
+/*
+ * Main function. Handle the options and runs process_sender
+ */
 int main(int argc, char* argv[]){
 
 	/* default values */
