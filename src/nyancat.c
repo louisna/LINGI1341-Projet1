@@ -57,7 +57,18 @@ list_t* list_create(){
     }
     return list;
 }
+/*
+lack_t* lack_create(){
+    lack_t* lack = (lack_t*)calloc(1, sizeof(lack_t));
+    if(!lack){
+        fprintf(stderr, "Not enough memory [lack_create]\n");
+        return NULL;
+    }
+    return lack;
+}
+*/
 
+//longueur max de queue ?
 int add_element_queue(list_t* list, pkt_t* packet){
 
     node_t * new_node = (node_t*) malloc(sizeof(node_t));
@@ -107,7 +118,14 @@ int pop_element_queue(list_t* list, pkt_t* packet){
     }
 }
 
+/*
+ * Adds the packet at the right place in the list (compare with seqnum)
+ * @list: the list
+ * @packet: the packet to be added
+ * @return: -1 in case of error, 0 if the packet has been added correctly
+ */
 int add_specific_queue(list_t* list, pkt_t* packet){
+    fprintf(stderr, "Coming in add specific queue\n");
     node_t * new_node = (node_t*) malloc(sizeof(node_t));
     if(new_node==NULL){
         fprintf(stderr, "Not enough memory [add element queue]\n");
@@ -128,25 +146,12 @@ int add_specific_queue(list_t* list, pkt_t* packet){
         node_t* runner = list->head;
         pkt_t* pkt_runner = runner->packet;
         node_t* previous = NULL;
-        int window_max = 31;
-        int cmp = 0;
-        if(pkt_get_seqnum(pkt_runner) - seqnum > window_max){
-            // passage 255->0
-            cmp = pkt_get_seqnum(pkt_runner) < seqnum + 255;
-        }
-        else{
-            cmp = pkt_get_seqnum(pkt_runner) < seqnum;
-        }
-        while(runner != NULL && cmp == 1){ // PREND PAS EN COMPTE MODULO
+        
+        while(runner != NULL && pkt_get_seqnum(pkt_runner) < seqnum){ // PREND PAS EN COMPTE MODULO
             previous = runner;
             runner = runner->next;
-            if(pkt_get_seqnum(pkt_runner) - seqnum > window_max){
-                // passage 255->0
-                cmp = pkt_get_seqnum(pkt_runner) < seqnum + 255;
-            }
-            else{
-                cmp = pkt_get_seqnum(pkt_runner) < seqnum;
-            }
+            if(runner != NULL)
+                pkt_runner = runner->packet;
         }
         if(pkt_get_seqnum(pkt_runner) == seqnum){
             pkt_del(packet);
