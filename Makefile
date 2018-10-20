@@ -28,4 +28,19 @@ receiver : src/receiver.c nyancat.o packet_implement.o
 sender: src/sender.c nyancat.o packet_implement.o
 	gcc -o sender src/sender.c nyancat.o packet_implement.o $(CFLAGS) -lz
 
+test_packet.o: ./tests/test_packet.c ./src/packet_implement.h
+	gcc -c ./tests/test_packet.c $(CFLAGS) -lcunit
+
+test_nyancat.o: ./tests/test_nyancat.c ./src/packet_implement.h ./src/nyancat.h
+	gcc -c ./tests/test_nyancat.c $(CFLAGS) -lcunit
+
+test_packet: test_packet.o
+	gcc -o test_packet test_packet.o  $(CFLAGS) -lcunit
+test_nyancat: test_nyancat.o
+	gcc -o test_nyancat test_nyancat.o $(CFLAGS) -lcunit
+
+test : test_packet test_nyancat
+	./test_packet 
+	./test_nyancat
+
 clean : rm -f sender receiver nyancat.o packet_implement.o
