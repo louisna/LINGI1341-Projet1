@@ -132,10 +132,6 @@ int write_in_sequence(list_t* list, int sfd, int fd){
 
 			pkt_t* detrop = pop_element_queue(list);
 
-			pkt_t* ack = create_ack(waited_seqnum, PTYPE_ACK, list->size);
-			send_ack(ack, sfd);
-			pkt_del(ack);
-
 			int seq_final;
 			if(waited_seqnum == 0)
 				seq_final = 255;
@@ -144,9 +140,15 @@ int write_in_sequence(list_t* list, int sfd, int fd){
 
 			if(list->size == 0 && pkt_get_length(packet) == 0 && pkt_get_seqnum(packet) == seq_final){
 				fprintf(stderr, "Sending the final ack\n");
+				pkt_del(packet);
 				// finish
 				return -10;
 			}
+
+			pkt_t* ack = create_ack(waited_seqnum, PTYPE_ACK, list->size);
+			send_ack(ack, sfd);
+			pkt_del(ack);
+
 			//else{
 			//	fprintf(stderr, "Ce qui ne va pas: %d %d %d\n", list->size, pkt_get_length(packet), pkt_get_seqnum(packet) == seq_final);
 			//}
