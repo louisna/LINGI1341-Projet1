@@ -258,7 +258,7 @@ const char* pkt_get_payload(const pkt_t* pkt)
 
 pkt_status_code pkt_set_type(pkt_t *pkt, const ptypes_t type)
 {
-	if(type > 3 || type < 0)
+	if(type > 3)
 		return E_TYPE;
     pkt->type = type;
     return PKT_OK;
@@ -266,7 +266,7 @@ pkt_status_code pkt_set_type(pkt_t *pkt, const ptypes_t type)
 
 pkt_status_code pkt_set_tr(pkt_t *pkt, const uint8_t tr)
 {
-	if(tr > 1 || tr < 0)
+	if(tr > 1)
 		return E_TR;
     pkt->truncated = tr;
     return PKT_OK;
@@ -282,7 +282,7 @@ pkt_status_code pkt_set_window(pkt_t *pkt, const uint8_t window)
 
 pkt_status_code pkt_set_seqnum(pkt_t *pkt, const uint8_t seqnum)
 {
-	if(seqnum > 255 || seqnum < 0)
+	if(seqnum > 255)
 		return E_SEQNUM;
     pkt->seqnum = seqnum;
     return PKT_OK;
@@ -290,7 +290,7 @@ pkt_status_code pkt_set_seqnum(pkt_t *pkt, const uint8_t seqnum)
 
 pkt_status_code pkt_set_length(pkt_t *pkt, const uint16_t length)
 {
-	if(length > MAX_PAYLOAD_SIZE || length < 0)
+	if(length > MAX_PAYLOAD_SIZE)
 		return E_LENGTH;
     pkt->length = length;
     return PKT_OK;
