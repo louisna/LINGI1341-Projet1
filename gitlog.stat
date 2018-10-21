@@ -1,3 +1,21 @@
+commit e29291933a91d8a50cd59560e37ea04106fcbded
+Author: louisnavarre <navarre.louis@student.uclouvain.be>
+Date:   Sun Oct 21 17:50:04 2018 +0200
+
+    Derniers warnings ?
+
+ src/receiver.c | 2 --
+ 1 file changed, 2 deletions(-)
+
+commit fda70572c2a968af29544b7b2a4dcebd05fe3ca1
+Author: louisnavarre <navarre.louis@student.uclouvain.be>
+Date:   Sun Oct 21 17:48:06 2018 +0200
+
+    Update gitlog.stat
+
+ gitlog.stat | 39 +++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 39 insertions(+)
+
 commit f0984f2ebe073703d32c16c5ee294731a5d2782a
 Author: louisnavarre <navarre.louis@student.uclouvain.be>
 Date:   Sun Oct 21 17:47:07 2018 +0200
