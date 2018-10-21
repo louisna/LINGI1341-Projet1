@@ -341,9 +341,6 @@ int process_receiver(int sfd, int fileOut){
 		tv.tv_usec = 0;
 		retval = select(max_fd+1, &check_fd, NULL, NULL, &tv);
 		fprintf(stderr, "Valeur de ma liste: %d\n", list->size);
-		print_list(list);
-		tv.tv_sec = 10;
-		tv.tv_usec = 0;
 		if(retval==0){
 			fprintf(stderr, "EOF confirmed 1\n");
 			break;
