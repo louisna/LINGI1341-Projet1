@@ -1,3 +1,12 @@
+commit aafffba7171bfdb629a121f207698a7fe10ad742
+Author: louisnavarre <navarre.louis@student.uclouvain.be>
+Date:   Sun Oct 21 17:50:55 2018 +0200
+
+    Git log
+
+ gitlog.stat | 18 ++++++++++++++++++
+ 1 file changed, 18 insertions(+)
+
 commit e29291933a91d8a50cd59560e37ea04106fcbded
 Author: louisnavarre <navarre.louis@student.uclouvain.be>
 Date:   Sun Oct 21 17:50:04 2018 +0200

@@ -131,16 +131,13 @@ int add_specific_queue(list_t* list, pkt_t* packet){
         int max_window = 31;
         int cmp = 0;
         if(pkt_get_seqnum(pkt_runner) - seqnum > max_window){
-            fprintf(stderr, "Entre1\n");
             cmp = 1;
         }
         else if(seqnum - pkt_get_seqnum(pkt_runner) > max_window){
-            fprintf(stderr, "Entre2\n");
             cmp = 0;
         }
         else{
             cmp = pkt_get_seqnum(pkt_runner) < seqnum;
-            fprintf(stderr, "Entre3\n");
         }
         
         while(runner != NULL && cmp){ // PREND PAS EN COMPTE MODULO
@@ -149,15 +146,12 @@ int add_specific_queue(list_t* list, pkt_t* packet){
             if(runner != NULL){
                 pkt_runner = runner->packet;
                 if(pkt_get_seqnum(pkt_runner) - seqnum > max_window){
-                    fprintf(stderr, "Entre1\n");
                     cmp = 1;
                 }
                 else if(seqnum - pkt_get_seqnum(pkt_runner) > max_window){
-                    fprintf(stderr, "Entre2\n");
                     cmp = 0;
                 }
                 else{
-                    fprintf(stderr, "Entre3\n");
                     cmp = pkt_get_seqnum(pkt_runner) < seqnum;
                 }
             }

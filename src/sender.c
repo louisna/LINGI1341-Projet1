@@ -31,7 +31,6 @@ pkt_t* pkt_fin = NULL;
  * @return: -1 in case of error, 0 otherwise
  */
 int send_packet(pkt_t* pkt, int sfd){
-	fprintf(stderr, "J'envoie le paquer %d de taille %d\n", pkt_get_seqnum(pkt), pkt_get_length(pkt));
 	time_t current_time = time(NULL);
 	uint32_t  a_lo = (uint32_t) current_time;
 
@@ -80,11 +79,9 @@ int packet_checked(list_t* list, int seqnum_ack){
     	if(((seqn - seqnum_ack <= MAX_WINDOW_SIZE && seqn - seqnum_ack >= 0) || 
     		(seqnum_ack - seqn <= MAX_WINDOW_SIZE && seqnum_ack - seqn >= 0)) 
     		&& seqn>=seqnum_ack){
-    		fprintf(stderr, "Je rentre dans le mauvais\n");
     		return 0;
     	}
     	if(list->size == 1 && pkt_get_length(packet) == 0 && seqnum_EOF == 1){
-    		fprintf(stderr, "Last element of the list + length of 0 + EOf reached = END.\n");
     		// EOF reached
     		return 1;
     	}
@@ -145,15 +142,12 @@ int check_ack(int sfd, list_t* list){
         else{
             int err = pkt_decode(buffer, readed, pkt);
             if(err){
-            	fprintf(stderr, "Impossible to decode teh package [check_ack]\n");
+            	fprintf(stderr, "Impossible to decode te package [check_ack]\n");
             	pkt_del(pkt);
             	return -1;
             }
             window_size = pkt_get_window(pkt);
-            //printf("Window size: %d\n", window_size);
             int seqnum_ack = pkt_get_seqnum(pkt);
-
-            //printf("Seqnum of the ack %d\n", seqnum_ack);
 
 
             if(pkt_get_type(pkt) == PTYPE_ACK){
@@ -206,11 +200,9 @@ int check_timeout(list_t* list, int sfd){
 		uint32_t time_sent = pkt_get_timestamp(packet);
 		if(a_lo - time_sent >= RETRANSMISSION_TIMER){
 			if(pkt_get_length(packet) == 0 && seqnum_EOF == 1 && list->size == 1){
-				fprintf(stderr, "Assuming that the EOF has been accepted by the receiver\n");
 				pkt_del(pkt_fin);
 				return 1;
 			}
-			//printf("Packet seqnum %d was timeout, sent\n", pkt_get_seqnum(packet));
 			int err = send_packet(packet, sfd);
 			count++;
 			if(err){
@@ -241,7 +233,6 @@ void read_to_list(int fd, list_t* list, int sfd){
 		return;
 	}
 	if(list->size >= window_size){
-		//fprintf(stderr, "Window already full\n");
 		return;
 	}
 		char payload[MAX_PAYLOAD_SIZE]; // maybe put it before the wile loop
@@ -265,7 +256,6 @@ void read_to_list(int fd, list_t* list, int sfd){
 				
 				/* If it is a packet with EOF, we don't send it, but we update the pkt_fin */
 				if(readed == 0){
-					fprintf(stderr, "EOF reached. End \n");
 					seqnum_EOF = 1;
 					err1 = pkt_set_seqnum(pkt, seqnum - 1);
 					pkt_fin = pkt;
@@ -273,10 +263,12 @@ void read_to_list(int fd, list_t* list, int sfd){
 				//else supprimé à check, on devrait pas renvoyer le seqnum -1 simplement ?
 				if(err1 || err2 || err3 || err4 || err5){
 					fprintf(stderr, "Error while seting the pkt\n");
+					pkt_del(pkt);
+					return;
 				}
 
 				// We send the packet if and only if it is not a packet with EOF
-				if(seqnum_EOF == 0){
+				if(readed != 0){
 					int err6 = send_packet(pkt,sfd);
 					if(err6){
 						fprintf(stderr, "Error while sending the packet for the first time\n");
@@ -333,7 +325,6 @@ int process_sender(int sfd, int fileIn){
 	int max_fd = sfd > fileIn ? sfd : fileIn;
 
 	while(1){
-		//fprintf(stderr, "%d\n",window_size );
 
 		FD_ZERO(&check_fd);
 		FD_SET(sfd, &check_fd);

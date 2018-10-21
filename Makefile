@@ -29,7 +29,7 @@ sender: src/sender.c nyancat.o packet_implement.o
 	gcc -o sender src/sender.c nyancat.o packet_implement.o $(CFLAGS) -lz
 
 test_packet: packet_implement.o
-	gcc -o test_packet tests/test_packet.c packet_implement.o  $(CFLAGS) -lcunit
+	gcc -o test_packet tests/test_packet.c packet_implement.o  $(CFLAGS) -lcunit -lz
 
 test_nyancat: packet_implement.o nyancat.o
 	gcc -o test_nyancat tests/test_nyancat.c nyancat.o packet_implement.o $(CFLAGS) -lcunit -lz
