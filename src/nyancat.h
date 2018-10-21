@@ -32,39 +32,29 @@ const char * real_address(const char *address, struct sockaddr_in6 *rval);
  */
 int create_socket(struct sockaddr_in6 *source_addr, int src_port, struct sockaddr_in6 *dest_addr, int dst_port);
 
+/*
+ * Struct used in list_t to store a packet
+ */
 typedef struct node{
 	pkt_t* packet;
 	struct node* next;
 } node_t;
 
-
+/*
+ * Struct used for the window of the main program. It uses the FIFO principle.
+ */
 typedef struct linked_list{
 	node_t* head;
 	node_t* tail;
 	int size;
 } list_t;
 
-/*
-
-typedef struct node_ack{
-	int seqnum;
-	node_ack* next;
-} nack_t;
-
-typedef struct list_ack{
-	nack_t* head;
-	nack_t* tail;
-	int size;
-} lack_t;
-*/
 
 /*
  * Creates a linked_list and initialize everything to O/NULL;
  * @return: the new linked_list, or NULL in case of error
  */
 list_t* list_create();
-
-//lack_t* lack_create();
 
 /*
  * Add a packet at the tail of the list and updates the size and the tail

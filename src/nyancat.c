@@ -57,18 +57,7 @@ list_t* list_create(){
     }
     return list;
 }
-/*
-lack_t* lack_create(){
-    lack_t* lack = (lack_t*)calloc(1, sizeof(lack_t));
-    if(!lack){
-        fprintf(stderr, "Not enough memory [lack_create]\n");
-        return NULL;
-    }
-    return lack;
-}
-*/
 
-//longueur max de queue ?
 int add_element_queue(list_t* list, pkt_t* packet){
 
     node_t * new_node = (node_t*) malloc(sizeof(node_t));
@@ -139,12 +128,39 @@ int add_specific_queue(list_t* list, pkt_t* packet){
         node_t* runner = list->head;
         pkt_t* pkt_runner = runner->packet;
         node_t* previous = NULL;
+        int max_window = 31;
+        int cmp = 0;
+        if(pkt_get_seqnum(pkt_runner) - seqnum > max_window){
+            fprintf(stderr, "Entre1\n");
+            cmp = 1;
+        }
+        else if(seqnum - pkt_get_seqnum(pkt_runner) > max_window){
+            fprintf(stderr, "Entre2\n");
+            cmp = 0;
+        }
+        else{
+            cmp = pkt_get_seqnum(pkt_runner) < seqnum;
+            fprintf(stderr, "Entre3\n");
+        }
         
-        while(runner != NULL && pkt_get_seqnum(pkt_runner) < seqnum){ // PREND PAS EN COMPTE MODULO
+        while(runner != NULL && cmp){ // PREND PAS EN COMPTE MODULO
             previous = runner;
             runner = runner->next;
-            if(runner != NULL)
+            if(runner != NULL){
                 pkt_runner = runner->packet;
+                if(pkt_get_seqnum(pkt_runner) - seqnum > max_window){
+                    fprintf(stderr, "Entre1\n");
+                    cmp = 1;
+                }
+                else if(seqnum - pkt_get_seqnum(pkt_runner) > max_window){
+                    fprintf(stderr, "Entre2\n");
+                    cmp = 0;
+                }
+                else{
+                    fprintf(stderr, "Entre3\n");
+                    cmp = pkt_get_seqnum(pkt_runner) < seqnum;
+                }
+            }
         }
         if(pkt_get_seqnum(pkt_runner) == seqnum){
             pkt_del(packet);

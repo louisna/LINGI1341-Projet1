@@ -77,7 +77,10 @@ int packet_checked(list_t* list, int seqnum_ack){
 
         packet = runner->packet;
     	seqn = pkt_get_seqnum(packet);
-    	if(seqn>=seqnum_ack){
+    	if(((seqn - seqnum_ack <= MAX_WINDOW_SIZE && seqn - seqnum_ack >= 0) || 
+    		(seqnum_ack - seqn <= MAX_WINDOW_SIZE && seqnum_ack - seqn >= 0)) 
+    		&& seqn>=seqnum_ack){
+    		fprintf(stderr, "Je rentre dans le mauvais\n");
     		return 0;
     	}
     	if(list->size == 1 && pkt_get_length(packet) == 0 && seqnum_EOF == 1){
