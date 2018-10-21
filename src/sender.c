@@ -14,7 +14,7 @@
 #include "nyancat.h"
 #include "packet_implement.h"
 #define MAX_READ_SIZE 528 // need to be changed ?
-#define RETRANSMISSION_TIMER 1 // pour l'instant
+#define RETRANSMISSION_TIMER 2 // pour l'instant
 //#define MAX_WINDOW_SIZE 31;
 
 

@@ -5,7 +5,7 @@
 # See gcc/clang manual to understand all flags
 CFLAGS += -std=c99 # Define which version of the C standard to use
 CFLAGS += -Wall # Enable the 'all' set of warnings
-#CFLAGS += -Werror # Treat all warnings as error
+CFLAGS += -Werror # Treat all warnings as error
 CFLAGS += -Wshadow # Warn when shadowing variables
 CFLAGS += -Wextra # Enable additional warnings
 CFLAGS += -O2 -D_FORTIFY_SOURCE=2 # Add canary code, i.e. detect buffer overflows
@@ -17,10 +17,10 @@ LDFLAGS = -rdynamic -lz
 all: sender receiver
 
 nyancat.o : src/nyancat.c src/nyancat.h
-		gcc -c src/nyancat.c src/nyancat.h $(CFLAGS) -lz
+		gcc -c src/nyancat.c src/nyancat.h $(CFLAGS)
 
 packet_implement.o: src/packet_implement.c src/packet_implement.h
-	gcc -c src/packet_implement.c src/packet_implement.h $(CFLAGS) -lz
+	gcc -c src/packet_implement.c src/packet_implement.h $(CFLAGS)
 
 receiver : src/receiver.c nyancat.o packet_implement.o
 	gcc -o receiver src/receiver.c nyancat.o packet_implement.o $(CFLAGS) -lz
@@ -28,14 +28,9 @@ receiver : src/receiver.c nyancat.o packet_implement.o
 sender: src/sender.c nyancat.o packet_implement.o
 	gcc -o sender src/sender.c nyancat.o packet_implement.o $(CFLAGS) -lz
 
-test_packet.o: ./tests/test_packet.c ./src/packet_implement.h
-	gcc -c ./tests/test_packet.c $(CFLAGS) -lcunit
-
-test_nyancat.o: ./tests/test_nyancat.c ./src/packet_implement.h ./src/nyancat.h
-	gcc -c ./tests/test_nyancat.c $(CFLAGS) -lcunit
-
 test_packet: packet_implement.o
-	gcc -o test_packet tests/test_packet.c packet_implement.o  $(CFLAGS) -lcunit -lz
+	gcc -o test_packet tests/test_packet.c packet_implement.o  $(CFLAGS) -lcunit
+
 test_nyancat: packet_implement.o nyancat.o
 	gcc -o test_nyancat tests/test_nyancat.c nyancat.o packet_implement.o $(CFLAGS) -lcunit -lz
 
@@ -43,4 +38,5 @@ test : test_packet test_nyancat
 	./test_packet 
 	./test_nyancat
 
-clean : rm -f sender receiver nyancat.o packet_implement.o
+clean : 
+	rm -f sender receiver nyancat.o packet_implement.o test_nyancat test_packet

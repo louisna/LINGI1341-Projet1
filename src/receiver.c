@@ -140,7 +140,7 @@ int write_in_sequence(list_t* list, int sfd, int fd){
 
 			if(list->size == 0 && pkt_get_length(packet) == 0 && pkt_get_seqnum(packet) == seq_final){
 				fprintf(stderr, "Sending the final ack\n");
-				pkt_del(packet);
+				pkt_del(detrop);
 				// finish
 				return -10;
 			}
@@ -153,7 +153,7 @@ int write_in_sequence(list_t* list, int sfd, int fd){
 			//	fprintf(stderr, "Ce qui ne va pas: %d %d %d\n", list->size, pkt_get_length(packet), pkt_get_seqnum(packet) == seq_final);
 			//}
 
-			pkt_del(packet); //detrop == packet
+			pkt_del(detrop); //detrop == packet
 		}
 		else
 			return 0; // not the waited
@@ -337,7 +337,7 @@ int process_receiver(int sfd, int fileOut){
 		FD_SET(sfd, &check_fd);
 
 		struct timeval tv;
-		tv.tv_sec = 10;
+		tv.tv_sec = 20;
 		tv.tv_usec = 0;
 		retval = select(max_fd+1, &check_fd, NULL, NULL, &tv);
 		fprintf(stderr, "Valeur de ma liste: %d\n", list->size);
