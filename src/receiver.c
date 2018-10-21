@@ -111,7 +111,6 @@ int check_in_window(int seqnum){
  */
 int write_in_sequence(list_t* list, int sfd, int fd){
 	node_t* runner = list->head;
-	node_t* previous = NULL;
 	pkt_t* packet = runner->packet;
 	if(runner != NULL && pkt_get_seqnum(packet) > waited_seqnum){
 		// not in sequence
@@ -127,7 +126,6 @@ int write_in_sequence(list_t* list, int sfd, int fd){
 				return -1;
 			}
 			waited_seqnum = (waited_seqnum + 1) % 256;
-			previous = runner;
 			runner = runner->next;
 
 			pkt_t* detrop = pop_element_queue(list);
