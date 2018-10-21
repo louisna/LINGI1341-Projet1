@@ -265,6 +265,23 @@ int wait_for_client(int sfd){
     struct sockaddr_in6 sock;
     socklen_t len = sizeof(sock);
 
+    fd_set fd;
+    FD_ZERO(&fd);
+    FD_SET(sfd, &fd);
+    struct timeval tv;
+    tv.tv_sec = 20;
+    tv.tv_usec = 0;
+
+    int selected = select(sfd+1, &fd, NULL, NULL, &tv);
+    if(selected == -1){
+    	fprintf(stderr, "Error while the first connection of the socket\n");
+    	return -1;
+    }
+    if(selected == 0){
+    	fprintf(stderr, "No connection for the receiver. End\n");
+    	return 1;
+    }
+
     int nread = recvfrom(sfd, buffer, sizeof(char)*1024, MSG_PEEK, (struct sockaddr*) &sock, &len);
     if(nread == -1){
         fprintf(stderr, "Error using recvfrom\n");
@@ -415,7 +432,15 @@ int main(int argc, char* argv[]){
 	int err_wait = wait_for_client(sfd);
 	if(sfd > 0 && err_wait < 0){
 		fprintf(stderr, "Error wait_for_client\n");
+		if(fd != 1)
+			close(fd);
 		return -1;
+	}
+	else if(sfd > 0 && err_wait == 1){
+		fprintf(stderr, "No connection confirmed. End\n");
+		if(fd != 1)
+			close(fd);
+		return EXIT_FAILURE;
 	}
 	process_receiver(sfd, fd);
 
