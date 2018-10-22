@@ -9,6 +9,7 @@
 #include <sys/select.h>
 #include <time.h>
 #include <sys/time.h>
+#include <errno.h>
 #include <fcntl.h>
 #include "nyancat.h"
 #include "packet_implement.h"
@@ -128,7 +129,7 @@ int write_in_sequence(list_t* list, int sfd, int fd){
 
 			pkt_t* detrop = pop_element_queue(list);
 
-			if(list->size == 0 && pkt_get_length(packet) == 0 && pkt_get_seqnum(packet) == waited_seqnum){
+			if(list->size == 0 && pkt_get_length(packet) == 0 && pkt_get_seqnum(packet) == waited_seqnum-1){
 				pkt_del(detrop);
 				// finish
 				return -10;
@@ -165,6 +166,7 @@ int read_to_list_r(list_t* list, int sfd, int fd){
 	int readed = recv(sfd, buffer, MAX_READ_SIZE, 0);
 	if(readed == -1){
 		fprintf(stderr, "Error while receving data [read_to_list_r]\n");
+		printf("%s\n", strerror(errno));
 	}
 	else{
 		pkt_t* pkt = pkt_new();
@@ -200,7 +202,6 @@ int read_to_list_r(list_t* list, int sfd, int fd){
 					return -1;
 				}
 				if(not_in_sequence == -10){
-					pkt_del(pkt);
 					return -2;
 				}
 				else if(not_in_sequence == 1){
@@ -437,6 +438,8 @@ int main(int argc, char* argv[]){
 		return EXIT_FAILURE;
 	}
 	process_receiver(sfd, fd);
+
+	close(sfd);
 
 	if(fd!=1){
 		close(fd);

@@ -10,7 +10,6 @@
 #include <time.h>
 #include <sys/time.h>
 #include <fcntl.h>
-#include <errno.h>
 #include "nyancat.h"
 #include "packet_implement.h"
 #define MAX_READ_SIZE 528 // need to be changed ?
@@ -462,8 +461,6 @@ int main(int argc, char* argv[]){
 	
 	process_sender(sfd, fd);
 
-
-	close(sfd);
 	if(fd != 0)
 		close(fd);
 
