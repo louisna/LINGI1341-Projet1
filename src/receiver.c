@@ -18,6 +18,7 @@
 
 int waited_seqnum = 0; // the waited seqnum
 int window_size = 1; // the size of the window
+uint32_t last_timestamp = 0;
 
 /*
  * Sends the packet pkt to be an ack
@@ -133,7 +134,7 @@ int write_in_sequence(list_t* list, int sfd, int fd){
 			}
 
 			pkt_t* ack = create_ack(waited_seqnum, PTYPE_ACK, list->size);
-			send_ack(ack, sfd, pkt_get_timestamp(packet));
+			send_ack(ack, sfd, last_timestamp);
 			pkt_del(ack);
 
 			pkt_del(detrop); //detrop == packet
@@ -191,12 +192,13 @@ int read_to_list_r(list_t* list, int sfd, int fd){
 					pkt_del(pkt);
 					return -1;
 				}
-				send_ack(nack, sfd, pkt_get_timestamp(pkt));
+				send_ack(nack, sfd, last_timestamp);
 				pkt_del(nack);
 				pkt_del(pkt);
 			}
 			else if(check_in_window(pkt_get_seqnum(pkt))){ // dans la window
 				add_specific_queue(list, pkt); // stock packet in list
+				last_timestamp = pkt_get_timestamp(pkt);
 				int not_in_sequence = write_in_sequence(list, sfd, fd); // writes to fd and sends ack
 				if(not_in_sequence == -1){
 					fprintf(stderr, "Error write in sequence\n");
@@ -214,7 +216,7 @@ int read_to_list_r(list_t* list, int sfd, int fd){
 						pkt_del(pkt);
 						return -1;
 					}
-					send_ack(ack, sfd, pkt_get_timestamp(pkt));
+					send_ack(ack, sfd, last_timestamp);
 					pkt_del(ack);
 				}
 			}
@@ -225,7 +227,7 @@ int read_to_list_r(list_t* list, int sfd, int fd){
 					pkt_del(pkt);
 					return -1;
 				}
-				send_ack(ack, sfd, pkt_get_timestamp(pkt));
+				send_ack(ack, sfd, last_timestamp);
 				pkt_del(ack);
 				pkt_del(pkt);
 				return -2;
@@ -239,7 +241,7 @@ int read_to_list_r(list_t* list, int sfd, int fd){
 					pkt_del(pkt);
 					return -1;
 				}
-				send_ack(ack, sfd, pkt_get_timestamp(pkt));
+				send_ack(ack, sfd, last_timestamp);
 				pkt_del(ack);
 
 			}

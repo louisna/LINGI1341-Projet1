@@ -253,7 +253,7 @@ void read_to_list(int fd, list_t* list, int sfd){
 				int err1 = 0;
 				int err2 = pkt_set_type(pkt, PTYPE_DATA);
 				int err3 = pkt_set_tr(pkt, 0);
-				int err4 = pkt_set_window(pkt, MAX_WINDOW_SIZE - list->size - 1);
+				int err4 = pkt_set_window(pkt, 0);
 				int err5 = 0;
 				err1 = pkt_set_seqnum(pkt, seqnum);
 				err5 = pkt_set_payload(pkt, payload, readed);
