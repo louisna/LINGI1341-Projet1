@@ -25,11 +25,8 @@ int window_size = 1; // the size of the window
  * @sfd: the socket file descriptor
  * @return 0 in case of success, -1 otherwise
  */
-int send_ack(pkt_t* pkt, int sfd){
-	time_t current_time = time(NULL);
-	uint32_t  a_lo = (uint32_t) current_time;
+int send_ack(pkt_t* pkt, int sfd, uint32_t timestamp){
 
-	pkt_status_code err1 = pkt_set_timestamp(pkt, a_lo);
 	if(err1!=PKT_OK){
 		fprintf(stderr, "Error while encoding time in packet : error is %d\n",err1);
 		return -1;
@@ -136,7 +133,7 @@ int write_in_sequence(list_t* list, int sfd, int fd){
 			}
 
 			pkt_t* ack = create_ack(waited_seqnum, PTYPE_ACK, list->size);
-			send_ack(ack, sfd);
+			send_ack(ack, sfd, pkt_get_timestamp(packet));
 			pkt_del(ack);
 
 			pkt_del(detrop); //detrop == packet
@@ -189,7 +186,7 @@ int read_to_list_r(list_t* list, int sfd, int fd){
 					pkt_del(pkt);
 					return -1;
 				}
-				send_ack(nack, sfd);
+				send_ack(nack, sfd, pkt_get_timestamp(pkt));
 				pkt_del(nack);
 				pkt_del(pkt);
 			}
@@ -212,7 +209,7 @@ int read_to_list_r(list_t* list, int sfd, int fd){
 						pkt_del(pkt);
 						return -1;
 					}
-					send_ack(ack, sfd);
+					send_ack(ack, sfd, pkt_get_timestamp(pkt));
 					pkt_del(ack);
 				}
 			}
@@ -223,7 +220,7 @@ int read_to_list_r(list_t* list, int sfd, int fd){
 					pkt_del(pkt);
 					return -1;
 				}
-				send_ack(ack, sfd);
+				send_ack(ack, sfd, pkt_get_timestamp(pkt));
 				pkt_del(ack);
 				pkt_del(pkt);
 				return -2;
@@ -237,7 +234,7 @@ int read_to_list_r(list_t* list, int sfd, int fd){
 					pkt_del(pkt);
 					return -1;
 				}
-				send_ack(ack, sfd);
+				send_ack(ack, sfd, pkt_get_timestamp(pkt));
 				pkt_del(ack);
 
 			}
