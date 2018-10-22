@@ -26,7 +26,7 @@ int window_size = 1; // the size of the window
  * @return 0 in case of success, -1 otherwise
  */
 int send_ack(pkt_t* pkt, int sfd, uint32_t timestamp){
-
+	int err1 = pkt_set_timestamp(pkt, timestamp);
 	if(err1!=PKT_OK){
 		fprintf(stderr, "Error while encoding time in packet : error is %d\n",err1);
 		return -1;
@@ -174,6 +174,11 @@ int read_to_list_r(list_t* list, int sfd, int fd){
 			int err = pkt_decode(buffer, readed, pkt);
 			if(err != 0){
 				fprintf(stderr, "Wrong package, CRC\n");
+				pkt_del(pkt);
+				return -1;
+			}
+			if(pkt_get_length(pkt) > MAX_PAYLOAD_SIZE){
+				fprintf(stderr, "DATA packet with length > MAX_PAYLOAD_SIZE\n");
 				pkt_del(pkt);
 				return -1;
 			}

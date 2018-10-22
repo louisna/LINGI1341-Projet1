@@ -145,6 +145,11 @@ int check_ack(int sfd, list_t* list){
             	pkt_del(pkt);
             	return -1;
             }
+            if(pkt_get_tr(pkt) == 1){
+            	fprintf(stderr, "ACK/NACK with tr = 1\n");
+            	pkt_del(pkt);
+            	return -1;
+            }
             window_size = pkt_get_window(pkt);
             int seqnum_ack = pkt_get_seqnum(pkt);
 
