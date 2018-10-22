@@ -257,7 +257,7 @@ void read_to_list(int fd, list_t* list, int sfd){
 				/* If it is a packet with EOF, we don't send it, but we update the pkt_fin */
 				if(readed == 0){
 					seqnum_EOF = 1;
-					err1 = pkt_set_seqnum(pkt, seqnum - 1);
+					err1 = pkt_set_seqnum(pkt, seqnum);
 					pkt_fin = pkt;
 				}
 				//else supprimé à check, on devrait pas renvoyer le seqnum -1 simplement ?

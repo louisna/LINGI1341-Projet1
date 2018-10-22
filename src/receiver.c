@@ -128,13 +128,7 @@ int write_in_sequence(list_t* list, int sfd, int fd){
 
 			pkt_t* detrop = pop_element_queue(list);
 
-			int seq_final;
-			if(waited_seqnum == 0)
-				seq_final = 255;
-			else
-				seq_final = waited_seqnum - 1;
-
-			if(list->size == 0 && pkt_get_length(packet) == 0 && pkt_get_seqnum(packet) == seq_final){
+			if(list->size == 0 && pkt_get_length(packet) == 0 && pkt_get_seqnum(packet) == waited_seqnum){
 				pkt_del(detrop);
 				// finish
 				return -10;
