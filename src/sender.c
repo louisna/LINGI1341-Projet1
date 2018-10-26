@@ -75,9 +75,7 @@ int packet_checked(list_t* list, int seqnum_ack){
 
         packet = runner->packet;
     	seqn = pkt_get_seqnum(packet);
-    	if(((seqn - seqnum_ack <= MAX_WINDOW_SIZE && seqn - seqnum_ack >= 0) ||
-    		(seqnum_ack - seqn <= MAX_WINDOW_SIZE && seqnum_ack - seqn >= 0))
-    		&& seqn>=seqnum_ack){
+    	if(!(255+seqnum_ack-seqn <= window_size || (seqnum_ack-seqn >= 0 && seqnum_ack-seqn <= window_size))){
     		return 0;
     	}
     	if(list->size == 1 && pkt_get_length(packet) == 0 && seqnum_EOF == 1){
@@ -92,6 +90,7 @@ int packet_checked(list_t* list, int seqnum_ack){
             fprintf(stderr, "List was in fact empty [packet_checked]\n");
             return -1;
         }
+				fprintf(stderr, "Packet seqnul %d was ack, size of list %d\n", pkt_get_seqnum(packet_pop), list->size);
         pkt_del(packet_pop);
     }
     return 0;
@@ -152,6 +151,7 @@ int check_ack(int sfd, list_t* list){
             }
             window_size = pkt_get_window(pkt);
             int seqnum_ack = pkt_get_seqnum(pkt);
+						fprintf(stderr, "Received ack of %d with length %d\n", pkt_get_seqnum(pkt), pkt_get_length(pkt));
 
 
             if(pkt_get_type(pkt) == PTYPE_ACK){
@@ -240,7 +240,6 @@ void read_to_list(int fd, list_t* list, int sfd){
 	if(list->size >= window_size){
 		return;
 	}
-	fprintf(stderr, "ICI\n" );
 		char payload[MAX_PAYLOAD_SIZE]; // maybe put it before the wile loop
 		int readed = read(fd, payload, MAX_PAYLOAD_SIZE);
 		if(readed == -1){
@@ -272,6 +271,8 @@ void read_to_list(int fd, list_t* list, int sfd){
 					pkt_del(pkt);
 					return;
 				}
+
+				fprintf(stderr, "New packet seqnum %d was added, list size = %d\n", pkt_get_seqnum(pkt), list->size+1);
 
 				// We send the packet if and only if it is not a packet with EOF
 				if(readed != 0){
@@ -345,14 +346,6 @@ int process_sender(int sfd, int fileIn){
 			return -1; // vraiment ?
 		}
 
-		if(retval == 0){
-			int time_out = check_timeout(list,sfd);
-			if(time_out == 1){
-				fprintf(stderr, "Ack useless at this point. End\n");
-				break;
-			}
-		}
-
 		else if(FD_ISSET(sfd, &check_fd)){
 			int retour = check_ack(sfd, list);
 			if(retour == 1){
@@ -376,6 +369,11 @@ int process_sender(int sfd, int fileIn){
 			}
 		}
 		/* We send all the packets with timeout */
+		int time_out = check_timeout(list,sfd);
+		if(time_out == 1){
+			fprintf(stderr, "Ack useless at this point. End\n");
+			break;
+		}
 
 
 

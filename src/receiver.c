@@ -27,6 +27,7 @@ uint32_t last_timestamp = 0;
  * @return 0 in case of success, -1 otherwise
  */
 int send_ack(pkt_t* pkt, int sfd, uint32_t timestamp){
+	fprintf(stderr, "BBBB. %d of the seqnum ack\n", pkt_get_seqnum(pkt));
 	int err1 = pkt_set_timestamp(pkt, timestamp);
 	if(err1!=PKT_OK){
 		fprintf(stderr, "Error while encoding time in packet : error is %d\n",err1);
@@ -184,6 +185,7 @@ int read_to_list_r(list_t* list, int sfd, int fd){
 				pkt_del(pkt);
 				return -1;
 			}
+			fprintf(stderr, "AAAAA 1. seqnum du recu %d\n", pkt_get_seqnum(pkt));
 			if(pkt_get_tr(pkt) == 1){
 				// packet troncated
 				fprintf(stderr, "Packet was troncated\n");
@@ -215,7 +217,7 @@ int read_to_list_r(list_t* list, int sfd, int fd){
 						fprintf(stderr, "Error while creating package, [rolr]\n");
 						return -1;
 					}
-					fprintf(stderr, "Sending ack %d wainted de first\n", waited_seqnum);
+					fprintf(stderr, "Sending ack %d wainted de first but the first received %d\n", waited_seqnum, pkt_get_seqnum(list->head->packet));
 					send_ack(ack, sfd, last_timestamp);
 					pkt_del(ack);
 				}
