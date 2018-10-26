@@ -124,6 +124,7 @@ pkt_status_code pkt_decode(const char *data, const size_t len, pkt_t *pkt)
         crc2_2 = ntohl(crc2_2);
         if(crc32(0, (Bytef*) data+12, taille) != crc2_2){
             fprintf(stderr, "crc2 mauvais\n");
+            free(payload);
             return E_CRC;
         }
 
@@ -347,7 +348,3 @@ void print_data(pkt_t* pkt){
 	printf("type: %d\n truncated: %d\n seqnum: %d\n window: %d\n length: %d\n crc1: %d\n payload: %s\n",
 		pkt->type, pkt->truncated, pkt->seqnum, pkt->window, pkt->length, pkt->crc1, pkt->payload);
 }
-
-
-
-

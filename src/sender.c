@@ -51,7 +51,7 @@ int send_packet(pkt_t* pkt, int sfd){
 		fprintf(stderr, "Error while using pkt_encode : error is %d\n",err2);
 		return -1;
 	}
-
+	fprintf(stderr, "Sending the packet with seqnum %d\n", pkt_get_seqnum(pkt));
 	ssize_t err3 = send( sfd, buff, length,0);
 	if(err3==-1){
 		fprintf(stderr, "Error while sending packet\n");
@@ -75,8 +75,8 @@ int packet_checked(list_t* list, int seqnum_ack){
 
         packet = runner->packet;
     	seqn = pkt_get_seqnum(packet);
-    	if(((seqn - seqnum_ack <= MAX_WINDOW_SIZE && seqn - seqnum_ack >= 0) || 
-    		(seqnum_ack - seqn <= MAX_WINDOW_SIZE && seqnum_ack - seqn >= 0)) 
+    	if(((seqn - seqnum_ack <= MAX_WINDOW_SIZE && seqn - seqnum_ack >= 0) ||
+    		(seqnum_ack - seqn <= MAX_WINDOW_SIZE && seqnum_ack - seqn >= 0))
     		&& seqn>=seqnum_ack){
     		return 0;
     	}
@@ -203,6 +203,7 @@ int check_timeout(list_t* list, int sfd){
 		pkt_t* packet = runner->packet;
 		uint32_t time_sent = pkt_get_timestamp(packet);
 		if(a_lo - time_sent >= RETRANSMISSION_TIMER){
+			fprintf(stderr, "Timeout of %d\n", pkt_get_seqnum(packet));
 			if(pkt_get_length(packet) == 0 && seqnum_EOF == 1 && list->size == 1){
 				pkt_del(pkt_fin);
 				return 1;
@@ -239,6 +240,7 @@ void read_to_list(int fd, list_t* list, int sfd){
 	if(list->size >= window_size){
 		return;
 	}
+	fprintf(stderr, "ICI\n" );
 		char payload[MAX_PAYLOAD_SIZE]; // maybe put it before the wile loop
 		int readed = read(fd, payload, MAX_PAYLOAD_SIZE);
 		if(readed == -1){
@@ -257,7 +259,7 @@ void read_to_list(int fd, list_t* list, int sfd){
 				int err5 = 0;
 				err1 = pkt_set_seqnum(pkt, seqnum);
 				err5 = pkt_set_payload(pkt, payload, readed);
-				
+
 				/* If it is a packet with EOF, we don't send it, but we update the pkt_fin */
 				if(readed == 0){
 					seqnum_EOF = 1;
@@ -283,7 +285,7 @@ void read_to_list(int fd, list_t* list, int sfd){
 					if(err){
 						fprintf(stderr, "Error while adding the packet to the queue, discarded\n");
 					}
-					seqnum = (seqnum + 1)%256; 
+					seqnum = (seqnum + 1)%256;
 				}
 			}
 		}
@@ -292,7 +294,7 @@ void read_to_list(int fd, list_t* list, int sfd){
 /*
  * Sends the last packet only and only if the list is empty.
  * @pre: seqnum_EOF == 1, the EOF was reached when reading
- * @list: the list 
+ * @list: the list
  * @sfd: the socket file descriptor
  * @return: 1 if the list was not empty, -1 in case of error, 0 otherwise
  */
@@ -343,6 +345,14 @@ int process_sender(int sfd, int fileIn){
 			return -1; // vraiment ?
 		}
 
+		if(retval == 0){
+			int time_out = check_timeout(list,sfd);
+			if(time_out == 1){
+				fprintf(stderr, "Ack useless at this point. End\n");
+				break;
+			}
+		}
+
 		else if(FD_ISSET(sfd, &check_fd)){
 			int retour = check_ack(sfd, list);
 			if(retour == 1){
@@ -366,11 +376,6 @@ int process_sender(int sfd, int fileIn){
 			}
 		}
 		/* We send all the packets with timeout */
-		int time_out = check_timeout(list,sfd);
-		if(time_out == 1){
-			fprintf(stderr, "Ack useless at this point. End\n");
-			break;
-		}
 
 
 
@@ -463,7 +468,7 @@ int main(int argc, char* argv[]){
 		fprintf(stderr, "Failed to create the socket\n");
 		exit(EXIT_FAILURE);
 	}
-	
+
 	process_sender(sfd, fd);
 
 	if(fd != 0)
