@@ -57,14 +57,12 @@ pkt_status_code pkt_decode(const char *data, const size_t len, pkt_t *pkt)
 
     if(pkt->type < 1 || pkt->type > 3){
         fprintf(stderr, "Incorrect packet type\n");
-        pkt_del(pkt);
         return E_TYPE;
     }
 
     if(pkt->truncated){
         if(pkt->type != PTYPE_DATA){
             fprintf(stderr, "The packet was truncated but it is not a data packet\n");
-            pkt_del(pkt);
             return E_TYPE;
         }
     }
@@ -125,6 +123,7 @@ pkt_status_code pkt_decode(const char *data, const size_t len, pkt_t *pkt)
         if(crc32(0, (Bytef*) data+12, taille) != crc2_2){
             fprintf(stderr, "crc2 mauvais\n");
             free(payload);
+            pkt_set_length(pkt, 0);
             return E_CRC;
         }
 
