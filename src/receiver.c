@@ -259,7 +259,6 @@ int read_to_list_r(list_t* list, int sfd, int fd){
  * and could be repeated several times blocking only at the first call.
  */
 int wait_for_client(int sfd){
-    char buffer[1024];
 
     struct sockaddr_in6 sock;
     socklen_t len = sizeof(sock);
@@ -281,13 +280,13 @@ int wait_for_client(int sfd){
     	return 1;
     }
 
-    int nread = recvfrom(sfd, buffer, sizeof(char)*1024, MSG_PEEK, (struct sockaddr*) &sock, &len);
+    int nread = recvfrom(sfd, NULL, 0, MSG_PEEK, (struct sockaddr*) &sock, &len);
     if(nread == -1){
         fprintf(stderr, "Error using recvfrom\n");
         return -1;
     }
 
-    int done = connect(sfd, (struct sockaddr*) &sock, (int) len);
+    int done = connect(sfd, (struct sockaddr*) &sock, sizeof(struct sockaddr_in6));
     if(done == -1){
         fprintf(stderr, "Error using connect");
         return -1;
