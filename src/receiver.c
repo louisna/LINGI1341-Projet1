@@ -16,7 +16,7 @@
 
 #define MAX_READ_SIZE 1024 // need to be changed ?
 #define WINDOW_ADD 1
-#define WINDOW_DIVIDE 2
+#define WINDOW_MINUS 2
 
 int waited_seqnum = 0; // the waited seqnum
 int window_size = 1; // the size of the window
@@ -28,9 +28,9 @@ void window_add(){
 	}
 }
 
-void window_divide(){
-	if(window_size > 1){
-		window_size /= WINDOW_DIVIDE;
+void window_minus(){
+	if(window_size > 2){
+		window_size -= WINDOW_MINUS;
 	}
 }
 
@@ -209,7 +209,7 @@ int read_to_list_r(list_t* list, int sfd, int fd){
 			if(pkt_get_tr(pkt) == 1){
 				// packet troncated
 				fprintf(stderr, "Packet was troncated\n");
-				window_divide();
+				window_minus();
 				pkt_t* nack = create_ack(pkt_get_seqnum(pkt), PTYPE_NACK);
 				if(!nack){
 					fprintf(stderr, "Error while creating package, [rolr]\n");
