@@ -12,8 +12,10 @@
 #include <fcntl.h>
 #include "nyancat.h"
 #include "packet_implement.h"
+
 #define MAX_READ_SIZE 528 // need to be changed ?
 #define RETRANSMISSION_TIMER 2 // pour l'instant
+#define COUNT_AVERAGE_RT 30
 //#define MAX_WINDOW_SIZE 31;
 
 
@@ -21,7 +23,26 @@ int seqnum = 0; // the waited seqnum
 int window_size = 1; // the size of the window
 int seqnum_EOF = 0;
 pkt_t* pkt_fin = NULL;
+uint32_t retransmission_timer2 = 2; // rt at the launch
+int count_rt = 1; // count for the average of the rt
 
+/*
+ * Computes the average of the retransmission timer, starting at 2sec
+ * @timestamp: the timestamp of the packet just acked
+ */
+void compute_rt(uint32_t timestamp){
+	if(count_rt > COUNT_AVERAGE_RT)
+		return;
+	time_t current_time = time(NULL);
+	uint32_t time_32 = (uint32_t) current_time;
+
+	uint32_t travel_time = time_32 - timestamp;
+	uint32_t total = retransmission_timer2 * count_rt;
+	total += travel_time;
+	count_rt++;
+	total = total / count_rt;
+	retransmission_timer2 = total;
+}
 
 /*
  * Function that will send a packet to the socket
@@ -86,6 +107,8 @@ int packet_checked(list_t* list, int seqnum_ack){
         runner = runner->next;
 
         pkt_t* packet_pop = pop_element_queue(list);
+        //compute_rt(pkt_get_timestamp(packet_pop));
+        //fprintf(stderr, "Retransmission timer is now of %d\n", retransmission_timer);
         if(packet_pop == NULL){
             fprintf(stderr, "List was in fact empty [packet_checked]\n");
             return -1;
@@ -150,6 +173,7 @@ int check_ack(int sfd, list_t* list){
             	return -1;
             }
             window_size = pkt_get_window(pkt);
+            fprintf(stderr, "Window of the receiver in now of %d\n", window_size);
             int seqnum_ack = pkt_get_seqnum(pkt);
 						fprintf(stderr, "Received ack of %d with length %d\n", pkt_get_seqnum(pkt), pkt_get_length(pkt));
 
@@ -183,6 +207,26 @@ int check_ack(int sfd, list_t* list){
 }
 
 /*
+ * Checks if the seqnum from the packet received is in the window
+ * of the receiver
+ * @return: 1 if seqnum is in the window, 0 otherwise
+ */
+int check_in_window(int seqnum_check, int first){
+	if(seqnum_check >= first){ // pas de passage 255 -> 0
+		if(seqnum_check - first <= window_size - 1)
+			return 1;
+		else
+			return 0;
+	}
+	else{//passage par 255->0
+		if(255 + seqnum_check - first <= window_size - 1)
+			return 1;
+		else
+			return 0;
+	}
+}
+
+/*
  * Checks all the elements of the list (window) and sends all the packets
  * with timestamp - actual_time >= RETRANSMISSION TIMER
  * If the last element to be acknoledged is the paket to indicate the EOF
@@ -196,11 +240,14 @@ int check_ack(int sfd, list_t* list){
 int check_timeout(list_t* list, int sfd){
 	time_t current_time = time(NULL);
 	uint32_t  a_lo = (uint32_t) current_time;
-	int count = 0;
 
 	node_t* runner = list->head;
-	while(runner != NULL && count < window_size){
+	while(runner != NULL){
 		pkt_t* packet = runner->packet;
+		if(!check_in_window(pkt_get_seqnum(packet), pkt_get_seqnum(list->head->packet))){
+			//fprintf(stderr, "Stop the check timeout, out of window, seqnum %d\n", pkt_get_seqnum(packet));
+			return 0;
+		}
 		uint32_t time_sent = pkt_get_timestamp(packet);
 		if(a_lo - time_sent >= RETRANSMISSION_TIMER){
 			fprintf(stderr, "Timeout of %d\n", pkt_get_seqnum(packet));
@@ -209,7 +256,6 @@ int check_timeout(list_t* list, int sfd){
 				return 1;
 			}
 			int err = send_packet(packet, sfd);
-			count++;
 			if(err){
 				fprintf(stderr, "Impossible to send again the packet [check_timeout]\n");
 			}
