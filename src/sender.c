@@ -16,7 +16,7 @@
 #define MAX_READ_SIZE 528 // need to be changed ?
 #define RETRANSMISSION_TIMER 2 // pour l'instant
 #define COUNT_AVERAGE_RT 30
-//#define MAX_WINDOW_SIZE 31;
+#define MAX_WINDOW_SIZE 31;
 
 
 int seqnum = 0; // the waited seqnum
