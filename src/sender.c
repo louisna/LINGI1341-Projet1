@@ -16,7 +16,6 @@
 #define MAX_READ_SIZE 528 // need to be changed ?
 #define RETRANSMISSION_TIMER 2 // pour l'instant
 #define COUNT_AVERAGE_RT 30
-#define MAX_WINDOW_SIZE 31;
 
 
 int seqnum = 0; // the waited seqnum
@@ -30,6 +29,7 @@ int count_rt = 1; // count for the average of the rt
  * Computes the average of the retransmission timer, starting at 2sec
  * @timestamp: the timestamp of the packet just acked
  */
+/*
 void compute_rt(uint32_t timestamp){
 	if(count_rt > COUNT_AVERAGE_RT)
 		return;
@@ -43,6 +43,7 @@ void compute_rt(uint32_t timestamp){
 	total = total / count_rt;
 	retransmission_timer2 = total;
 }
+*/
 
 /*
  * Function that will send a packet to the socket

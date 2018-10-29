@@ -136,7 +136,6 @@ int write_in_sequence(list_t* list, int sfd, int fd){
 				return -10;
 			}
 
-			window_add();
 			pkt_t* ack = create_ack(waited_seqnum, PTYPE_ACK, list->size);
 			fprintf(stderr, "Sending ack %d normal\n", waited_seqnum);
 			send_ack(ack, sfd, last_timestamp);
@@ -198,7 +197,6 @@ int read_to_list_r(list_t* list, int sfd, int fd){
 			if(pkt_get_tr(pkt) == 1){
 				// packet troncated
 				fprintf(stderr, "Packet was troncated\n");
-				window_minus();
 				pkt_t* nack = create_ack(pkt_get_seqnum(pkt), PTYPE_NACK, list->size);
 				if(!nack){
 					fprintf(stderr, "Error while creating package, [rolr]\n");
