@@ -23,7 +23,7 @@ int seqnum = 0; // the waited seqnum
 int window_size = 1; // the size of the window
 int seqnum_EOF = 0;
 pkt_t* pkt_fin = NULL;
-uint32_t retransmission_timer2 = 2; // rt at the launch
+struct timeval tv; // rt at the launch
 int count_rt = 1; // count for the average of the rt
 
 /*
@@ -213,13 +213,13 @@ int check_ack(int sfd, list_t* list){
  */
 int check_in_window(int seqnum_check, int first){
 	if(seqnum_check >= first){ // pas de passage 255 -> 0
-		if(seqnum_check - first <= window_size - 1)
+		if(seqnum_check - first <= MAX_WINDOW_SIZE - 1)
 			return 1;
 		else
 			return 0;
 	}
 	else{//passage par 255->0
-		if(255 + seqnum_check - first <= window_size - 1)
+		if(255 + seqnum_check - first <= MAX_WINDOW_SIZE - 1)
 			return 1;
 		else
 			return 0;
@@ -371,7 +371,6 @@ int process_sender(int sfd, int fileIn){
 	int retval; // return value of select
 	list_t* list = list_create();
 
-	struct timeval tv;
 	tv.tv_sec = RETRANSMISSION_TIMER;
 	tv.tv_usec = 0;
 
