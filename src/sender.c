@@ -26,26 +26,6 @@ struct timeval tv; // rt at the launch
 int count_rt = 1; // count for the average of the rt
 
 /*
- * Computes the average of the retransmission timer, starting at 2sec
- * @timestamp: the timestamp of the packet just acked
- */
-/*
-void compute_rt(uint32_t timestamp){
-	if(count_rt > COUNT_AVERAGE_RT)
-		return;
-	time_t current_time = time(NULL);
-	uint32_t time_32 = (uint32_t) current_time;
-
-	uint32_t travel_time = time_32 - timestamp;
-	uint32_t total = retransmission_timer2 * count_rt;
-	total += travel_time;
-	count_rt++;
-	total = total / count_rt;
-	retransmission_timer2 = total;
-}
-*/
-
-/*
  * Function that will send a packet to the socket
  * @pkt: the adress of the packet to be sent
  * @sfd: the socket file descriptor
@@ -114,25 +94,11 @@ int packet_checked(list_t* list, int seqnum_ack){
             fprintf(stderr, "List was in fact empty [packet_checked]\n");
             return -1;
         }
-				fprintf(stderr, "Packet seqnul %d was ack, size of list %d\n", pkt_get_seqnum(packet_pop), list->size);
+				fprintf(stderr, "Packet seqnum %d was ack, size of list %d\n", pkt_get_seqnum(packet_pop), list->size);
         pkt_del(packet_pop);
     }
     return 0;
 
-}
-
-void send_specific_pkt(int sfd, list_t* list, int seqn){
-	node_t* runner = list->head;
-	while(runner != NULL){
-		pkt_t* packet = runner->packet;
-		if(seqn == pkt_get_seqnum(packet)){
-			int err = send_packet(packet, sfd);
-			if(err){
-				fprintf(stderr, "Packet with NACK cannot be sent\n");
-			}
-		}
-	}
-	fprintf(stderr, "[send_specific_pkt] Cannot find the packet\n");
 }
 
 /*
@@ -169,14 +135,14 @@ int check_ack(int sfd, list_t* list){
             	return -1;
             }
             if(pkt_get_tr(pkt) == 1){
-            	fprintf(stderr, "ACK/NACK with tr = 1\n");
+            	fprintf(stderr, "ACK/NACK with tr = 1, discarded\n");
             	pkt_del(pkt);
             	return -1;
             }
             window_size = pkt_get_window(pkt);
             fprintf(stderr, "Window of the receiver in now of %d\n", window_size);
             int seqnum_ack = pkt_get_seqnum(pkt);
-						fprintf(stderr, "Received ack of %d with length %d\n", pkt_get_seqnum(pkt), pkt_get_length(pkt));
+						fprintf(stderr, "Received ack of %d\n", pkt_get_seqnum(pkt));
 
 
             if(pkt_get_type(pkt) == PTYPE_ACK){
@@ -214,13 +180,13 @@ int check_ack(int sfd, list_t* list){
  */
 int check_in_window(int seqnum_check, int first){
 	if(seqnum_check >= first){ // pas de passage 255 -> 0
-		if(seqnum_check - first <= MAX_WINDOW_SIZE - 1)
+		if(seqnum_check - first <= window_size - 1)
 			return 1;
 		else
 			return 0;
 	}
 	else{//passage par 255->0
-		if(255 + seqnum_check - first <= MAX_WINDOW_SIZE - 1)
+		if(255 + seqnum_check - first <= window_size - 1)
 			return 1;
 		else
 			return 0;
