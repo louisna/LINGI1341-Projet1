@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <sys/types.h>        /* See NOTES */
+#include <sys/types.h>   
 #include <sys/socket.h>
 #include <netdb.h>
 #include <netinet/in.h>
@@ -14,20 +14,26 @@
 #include "nyancat.h"
 #include "packet_implement.h"
 
-#define MAX_READ_SIZE 1024 // need to be changed ?
+#define MAX_READ_SIZE 528
 #define WINDOW_ADD 1
 #define WINDOW_DIVIDE 2
 
 int waited_seqnum = 0; // the waited seqnum
 int window_size = 1; // the size of the window
-uint32_t last_timestamp = 0;
+uint32_t last_timestamp = 0; // the last timestamp received
 
+/*
+ * Computes the new window if possible by adding WINDOW_ADD
+ */
 void window_add(){
 	if(window_size < MAX_WINDOW_SIZE){
 		window_size += WINDOW_ADD;
 	}
 }
 
+/* 
+ * Compute the new window if possible by dividing by WINDOW_DIVIDE
+ */
 void window_divide(){
 	if(window_size > 1){
 		window_size /= WINDOW_DIVIDE;
@@ -42,6 +48,7 @@ void window_divide(){
  */
 int send_ack(pkt_t* pkt, int sfd, uint32_t timestamp){
 	fprintf(stderr, "Send packet with seqnum of %d and window size is now of %d\n", pkt_get_seqnum(pkt), window_size);
+	// We set the timestamp with the last timestamp received
 	int err1 = pkt_set_timestamp(pkt, timestamp);
 	if(err1!=PKT_OK){
 		fprintf(stderr, "Error while encoding time in packet : error is %d\n",err1);
@@ -94,13 +101,13 @@ pkt_t* create_ack(int seqnum, int type){
  * @return: 1 if seqnum is in the window, 0 otherwise
  */
 int check_in_window(int seqnum){
-	if(seqnum >= waited_seqnum){ // pas de passage 255 -> 0
+	if(seqnum >= waited_seqnum){ // no 255 -> 0
 		if(seqnum - waited_seqnum <= window_size)
 			return 1;
 		else
 			return 0;
 	}
-	else{//passage par 255->0
+	else{// 255->0
 		if(255 + seqnum - waited_seqnum <= window_size)
 			return 1;
 		else
@@ -146,6 +153,8 @@ int write_in_sequence(list_t* list, int sfd, int fd){
 				// finish
 				return -10;
 			}
+			// send ack of a successfully written packet
+			// we increment the window
 			window_add();
 			pkt_t* ack = create_ack(waited_seqnum, PTYPE_ACK);
 			fprintf(stderr, "Sending ack %d normal\n", waited_seqnum);
@@ -219,14 +228,15 @@ int read_to_list_r(list_t* list, int sfd, int fd){
 				pkt_del(nack);
 				pkt_del(pkt);
 			}
-			else if(check_in_window(pkt_get_seqnum(pkt))){ // dans la window
+			else if(check_in_window(pkt_get_seqnum(pkt))){ // in window
 				add_specific_queue(list, pkt); // stock packet in list
-				int not_in_sequence = write_in_sequence(list, sfd, fd); // writes to fd and sends ack
+				int not_in_sequence = write_in_sequence(list, sfd, fd); // writes in fd and sends ack
 				if(not_in_sequence == -1){
 					fprintf(stderr, "Error write in sequence\n");
 					return -1;
 				}
 				if(not_in_sequence == -10){
+					// End of transmission
 					return -2;
 				}
 				else if(not_in_sequence == 1){
@@ -250,6 +260,8 @@ int read_to_list_r(list_t* list, int sfd, int fd){
 					pkt_del(pkt);
 					return -1;
 				}
+				// even if our sender does not wait for the ACK, for the "interoperabilite"
+				// we send it for our friends :-)
 				send_ack(ack, sfd, last_timestamp);
 				pkt_del(ack);
 				pkt_del(pkt);
@@ -303,6 +315,7 @@ int wait_for_client(int sfd){
     FD_ZERO(&fd);
     FD_SET(sfd, &fd);
     struct timeval tv;
+    // timeout value
     tv.tv_sec = 20;
     tv.tv_usec = 0;
 
@@ -361,6 +374,7 @@ int process_receiver(int sfd, int fileOut){
 		FD_SET(sfd, &check_fd);
 
 		struct timeval tv;
+		//timeout value
 		tv.tv_sec = 20;
 		tv.tv_usec = 0;
 		retval = select(max_fd+1, &check_fd, NULL, NULL, &tv);
@@ -374,12 +388,6 @@ int process_receiver(int sfd, int fileOut){
 			return -1; // vraiment ?
 		}
 		else if(FD_ISSET(sfd, &check_fd)){
-			// read from sfd
-			// check if in sequence
-			// if out of sequence, stock in list
-			//	and return the last ack
-			// truncated ?
-			// if packet length 0 + sequence number already done
 			int err = read_to_list_r(list, sfd, fileOut);
 			if(err == -2){
 				fprintf(stderr, "EOF confirmed\n");

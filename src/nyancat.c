@@ -130,7 +130,7 @@ int add_specific_queue(list_t* list, pkt_t* packet){
         node_t* previous = NULL;
         int max_window = 31;
         int cmp = 0;
-        if(pkt_get_seqnum(pkt_runner) - seqnum > max_window){
+        if(pkt_get_seqnum(pkt_runner) - seqnum > max_window){ // pour gerer le passage 255->0
             cmp = 1;
         }
         else if(seqnum - pkt_get_seqnum(pkt_runner) > max_window){
@@ -140,12 +140,12 @@ int add_specific_queue(list_t* list, pkt_t* packet){
             cmp = pkt_get_seqnum(pkt_runner) < seqnum;
         }
         
-        while(runner != NULL && cmp){ // PREND PAS EN COMPTE MODULO
+        while(runner != NULL && cmp){
             previous = runner;
             runner = runner->next;
             if(runner != NULL){
                 pkt_runner = runner->packet;
-                if(pkt_get_seqnum(pkt_runner) - seqnum > max_window){
+                if(pkt_get_seqnum(pkt_runner) - seqnum > max_window){ // pour gerer le passage 255->0
                     cmp = 1;
                 }
                 else if(seqnum - pkt_get_seqnum(pkt_runner) > max_window){
