@@ -1,11 +1,122 @@
+commit 43100178a78475c81394abeb7fbfcf468ced20e3
+Author: louisnavarre <navarre.louis@student.uclouvain.be>
+Date:   Thu Nov 1 19:52:01 2018 +0100
+
+    Commentaires ajoutés
+
+commit 1ff846cf04ffbb32bed61de60db858db31f57c4b
+Author: louisna <navarre.louis@student.uclouvain.be>
+Date:   Wed Oct 31 18:06:26 2018 +0100
+
+    window dynamique à nouveau
+
+commit b6e1cf5838511b9fb16e2a477e59324f549b70a3
+Author: louisnavarre <navarre.louis@student.uclouvain.be>
+Date:   Mon Oct 29 22:33:10 2018 +0100
+
+    debug des changements annulés
+
+commit 5acc0006f5c945c857f1b8b509f464c5b1175124
+Author: louisnavarre <navarre.louis@student.uclouvain.be>
+Date:   Mon Oct 29 22:30:18 2018 +0100
+
+    Update src/sender.c
+
+commit df463b80388bb2364b49d8efb0fc602fe41e71c7
+Author: louisnavarre <navarre.louis@student.uclouvain.be>
+Date:   Mon Oct 29 22:25:48 2018 +0100
+
+    annulation du changement de la window
+
+commit 794bfcda4d60d632b154b3ae35c015504d6acea5
+Author: louisna <navarre.louis@student.uclouvain.be>
+Date:   Sun Oct 28 21:51:09 2018 +0100
+
+    au lieu de diviser => moins
+
+commit 4efee17c105a7096eaad3d9b192563973f260bfe
+Author: louisna <navarre.louis@student.uclouvain.be>
+Date:   Sun Oct 28 19:35:57 2018 +0100
+
+    La window s'adapte maintenant (pas tout le temps 32)
+
+commit 90945e8df89218f226e5ee27f7744b213cb4342f
+Author: louisna <navarre.louis@student.uclouvain.be>
+Date:   Fri Oct 26 19:42:58 2018 +0200
+
+    Double free corruption corrige pour decode
+
+commit 16cccf5a4b3b102ea0c7c4f95d46877ad1a87578
+Author: Navarre Navarre <louisna@c3po.info.ucl.ac.be>
+Date:   Fri Oct 26 16:17:02 2018 +0200
+
+    Ca marcher?
+
+commit e0a81713e22bf6297cb8df76f1fc8c88111b327d
+Author: Navarre Navarre <louisna@c3po.info.ucl.ac.be>
+Date:   Fri Oct 26 16:01:19 2018 +0200
+
+    Corrigé sender qui avait mauvais ack
+
+commit 21989f982efeee52fb28b24bd75817976ccb1984
+Author: Navarre Navarre <louisna@solo.info.ucl.ac.be>
+Date:   Fri Oct 26 13:55:08 2018 +0200
+
+    Halala
+
+commit 5994eec6adda4f5d543f6ee995547639286dd27d
+Author: Navarre Navarre <louisna@solo.info.ucl.ac.be>
+Date:   Fri Oct 26 12:45:08 2018 +0200
+
+    Bug ::
+
+commit 2588188db2cf086e186f0a6ddc4fb5c7ec12737c
+Author: louisna <navarre.louis@student.uclouvain.be>
+Date:   Mon Oct 22 18:31:22 2018 +0200
+
+    test.sh changé
+
+commit 803d92f4e9391c459710c95373812f03c03ca59a
+Author: louisna <navarre.louis@student.uclouvain.be>
+Date:   Mon Oct 22 18:03:22 2018 +0200
+
+    Window sender + timestamp changé
+
+commit 8a4402f3bbcb2b05cd99064855c05761ef00845c
+Author: louisnavarre <navarre.louis@student.uclouvain.be>
+Date:   Mon Oct 22 16:51:27 2018 +0200
+
+    changements test
+
+commit b8ea48b29be8096e59147412f6ea4e79b69d98f4
+Author: Navarre Navarre <louisna@c3po.info.ucl.ac.be>
+Date:   Mon Oct 22 16:20:28 2018 +0200
+
+    changement timestamp
+
+commit 5dae5bfaf333cfcb64bee53fbd633420474f8f64
+Author: louisna <navarre.louis@student.uclouvain.be>
+Date:   Mon Oct 22 14:57:28 2018 +0200
+
+    corrigé bug précédent + double free corrigé
+
+commit 3507c5a5aeeedd2bc3a73dc3d911daf2d05dc42b
+Author: louisnavarre <navarre.louis@student.uclouvain.be>
+Date:   Mon Oct 22 14:37:16 2018 +0200
+
+    corrigé seqnum du dernier paquet
+
+commit 1bbe937b55c0bf4f4918c25d3e82c54b621c42bb
+Author: louisna <navarre.louis@student.uclouvain.be>
+Date:   Sun Oct 21 22:54:39 2018 +0200
+
+    git log !
+
 commit d3f1011409f9ae856cf081203e17a358aaa01ac8
 Author: louisna <navarre.louis@student.uclouvain.be>
 Date:   Sun Oct 21 22:50:49 2018 +0200
 
     git log ?
-
- gitlog.stat | 1079 -----------------------------------------------------------
- 1 file changed, 1079 deletions(-)
 
 commit 2fd9f98775381156825e445f0dcb260adf663a6c
 Author: louisna <navarre.louis@student.uclouvain.be>
@@ -13,22 +124,11 @@ Date:   Sun Oct 21 22:49:34 2018 +0200
 
     Ajout dans wait_for_client pour gérer le cas où il n'y a aucune connexion (ajout de select)
 
- src/receiver.c | 25 +++++++++++++++++++++++++
- 1 file changed, 25 insertions(+)
-
 commit 285c96dee33fa53aae205690a2548a354fd3db20
 Author: louisna <navarre.louis@student.uclouvain.be>
 Date:   Sun Oct 21 19:20:52 2018 +0200
 
     Derniers changements (makefile + enlevé les fprintf)
-
- Makefile       |  2 +-
- gitlog.stat    |  9 +++++++++
- src/nyancat.c  |  6 ------
- src/receiver.c | 27 ---------------------------
- src/sender.c   | 17 ++++-------------
- test.sh        |  2 +-
- 6 files changed, 15 insertions(+), 48 deletions(-)
 
 commit aafffba7171bfdb629a121f207698a7fe10ad742
 Author: louisnavarre <navarre.louis@student.uclouvain.be>
@@ -36,17 +136,11 @@ Date:   Sun Oct 21 17:50:55 2018 +0200
 
     Git log
 
- gitlog.stat | 18 ++++++++++++++++++
- 1 file changed, 18 insertions(+)
-
 commit e29291933a91d8a50cd59560e37ea04106fcbded
 Author: louisnavarre <navarre.louis@student.uclouvain.be>
 Date:   Sun Oct 21 17:50:04 2018 +0200
 
     Derniers warnings ?
-
- src/receiver.c | 2 --
- 1 file changed, 2 deletions(-)
 
 commit fda70572c2a968af29544b7b2a4dcebd05fe3ca1
 Author: louisnavarre <navarre.louis@student.uclouvain.be>
@@ -54,17 +148,11 @@ Date:   Sun Oct 21 17:48:06 2018 +0200
 
     Update gitlog.stat
 
- gitlog.stat | 39 +++++++++++++++++++++++++++++++++++++++
- 1 file changed, 39 insertions(+)
-
 commit f0984f2ebe073703d32c16c5ee294731a5d2782a
 Author: louisnavarre <navarre.louis@student.uclouvain.be>
 Date:   Sun Oct 21 17:47:07 2018 +0200
 
     waring
-
- src/packet_implement.c | 2 --
- 1 file changed, 2 deletions(-)
 
 commit 9cbeecfff5823109e0b27218cccb26e026b94f5a
 Author: louisnavarre <navarre.louis@student.uclouvain.be>
@@ -72,19 +160,11 @@ Date:   Sun Oct 21 17:45:18 2018 +0200
 
     warnings
 
- src/packet_implement.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
-
 commit 4bb7d0367b67c176954580386163d1589c280c39
 Author: louisnavarre <navarre.louis@student.uclouvain.be>
 Date:   Sun Oct 21 17:38:37 2018 +0200
 
     Changements timer
-
- Makefile       | 18 +++++++-----------
- src/receiver.c |  6 +++---
- src/sender.c   |  2 +-
- 3 files changed, 11 insertions(+), 15 deletions(-)
 
 commit 4f1e126bd405181992efc438c348b93aee0a0fbd
 Author: louisnavarre <navarre.louis@student.uclouvain.be>
@@ -92,27 +172,17 @@ Date:   Sun Oct 21 17:38:06 2018 +0200
 
     Rapport + log
 
- gitlog.stat | 1013 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- rapport.pdf |  Bin 0 -> 139376 bytes
- 2 files changed, 1013 insertions(+)
-
 commit 4c6c9706aad6b55da0d4eb8f10eed1a8ea16e513
 Author: louisnavarre <navarre.louis@student.uclouvain.be>
 Date:   Sun Oct 21 16:21:05 2018 +0200
 
     l
 
- src/receiver.c | 3 ---
- 1 file changed, 3 deletions(-)
-
 commit 2a30e4e6796d0468fd988d97e718b192e1531319
 Author: louisnavarre <navarre.louis@student.uclouvain.be>
 Date:   Sun Oct 21 16:18:33 2018 +0200
 
     le receiver n'envoie pas de ack pour le derneir
-
- src/receiver.c | 10 ++++++----
- 1 file changed, 6 insertions(+), 4 deletions(-)
 
 commit cff6d90e1de9d8d06f12f24faee7de3d767b877d
 Author: louisna <navarre.louis@student.uclouvain.be>
@@ -124,12 +194,6 @@ Date:   Sun Oct 21 13:21:18 2018 +0200
     => le programme passe les tests suivants:
     -10x réussite consécutives d'un fichier 130kB à 50% perte
     -10x réussite consécutive d'un fichier de 150kB à 50% de perte
-
- src/nyancat.c | 42 +++++++++++++++++++++++++++++-------------
- src/nyancat.h | 22 ++++++----------------
- src/sender.c  |  5 ++++-
- test.sh       |  4 ++--
- 4 files changed, 41 insertions(+), 32 deletions(-)
 
 commit a4415d7b03fd15991288958c49fefdc9b67ecb04
 Author: louisna <navarre.louis@student.uclouvain.be>
@@ -146,16 +210,6 @@ Date:   Sun Oct 21 00:55:46 2018 +0200
     - receiver & sender: adapté par rapport au dernier changement
     - receiver & sender: améliorés pour les memory leak. Pour le peu de tests effectués, par de problème rencontré.
 
- Makefile               | 10 +++++-----
- src/nyancat.c          | 15 ++++-----------
- src/nyancat.h          |  2 +-
- src/packet_implement.c |  4 ++--
- src/receiver.c         | 22 ++++++++++++++++++----
- src/sender.c           | 11 +++++++----
- tests/test_nyancat.c   | 49 ++++++++++++++++++++++++-------------------------
- tests/test_packet.c    | 29 +++++++++++++----------------
- 8 files changed, 74 insertions(+), 68 deletions(-)
-
 commit 72f2792323564fc345dcbb07be0f2b3a4d4440dd
 Author: louisnavarre <navarre.louis@student.uclouvain.be>
 Date:   Sat Oct 20 17:29:18 2018 +0200
@@ -163,11 +217,6 @@ Date:   Sat Oct 20 17:29:18 2018 +0200
     Tests ajoutés dans makefile: VERIFIER SI COMPILE
     
     marche pas sur MacOs donc vérifier sur Linux
-
- Makefile             | 15 +++++++++++++++
- tests/test_nyancat.c |  1 -
- tests/test_packet.c  |  1 -
- 3 files changed, 15 insertions(+), 2 deletions(-)
 
 commit e2cbe5ee2f4920f0602774316ac981b5f53b89bc
 Author: louisna <navarre.louis@student.uclouvain.be>
@@ -181,20 +230,11 @@ Date:   Sat Oct 20 12:06:10 2018 +0200
     
     Il faut encore donc gérer le passage 255-0 dans add specific + vérifier les pertes avec valgrind
 
- src/nyancat.c | 39 ++++++++++++++++++++++-----------------
- test.sh       |  2 +-
- 2 files changed, 23 insertions(+), 18 deletions(-)
-
 commit 81d600840a38a6e6bd5b0f89f3a504bdeefbc309
 Author: louisna <navarre.louis@student.uclouvain.be>
 Date:   Sat Oct 20 11:15:29 2018 +0200
 
     spec nyancat.c + handle le passage 255->0
-
- src/nyancat.c  | 116 +++++++++------------------------------------------------
- src/nyancat.h  |  12 +++---
- src/receiver.c |   2 +-
- 3 files changed, 24 insertions(+), 106 deletions(-)
 
 commit 5439589ff0716f74a849f297f0aa3c905803ff94
 Author: louisna <navarre.louis@student.uclouvain.be>
@@ -202,21 +242,11 @@ Date:   Sat Oct 20 11:01:58 2018 +0200
 
     specifications added
 
- src/receiver.c | 104 +++++++++++++++++----------------------------------------
- src/sender.c   |  69 +++++++++++++++++++++-----------------
- 2 files changed, 70 insertions(+), 103 deletions(-)
-
 commit 0ca36e9a5d37ec59010a3293e9a17ddbf0b85dd1
 Author: louisna <navarre.louis@student.uclouvain.be>
 Date:   Fri Oct 19 23:48:23 2018 +0200
 
     ca marche !
-
- src/nyancat.c  |  2 ++
- src/receiver.c | 41 +++++++++++++++++++++++++++++------------
- src/sender.c   | 58 +++++++++++++++++++++++++++++++++++++++++++++-------------
- test.sh        |  4 ++--
- 4 files changed, 78 insertions(+), 27 deletions(-)
 
 commit 85dafc3c9170b92d0d355d99e8a0f7acea93ac17
 Author: louisna <navarre.louis@student.uclouvain.be>
@@ -224,19 +254,11 @@ Date:   Fri Oct 19 19:00:36 2018 +0200
 
     Géré le EOF (pas beau pour l'instant mais ça marche)
 
- src/receiver.c |  4 +++-
- src/sender.c   | 24 +++++++++++++-----------
- test.sh        |  4 ++--
- 3 files changed, 18 insertions(+), 14 deletions(-)
-
 commit 88fcd3229614da48b96217264ca17d2c26dd4f81
 Author: Hadri2103 <h.plancq@gmail.com>
 Date:   Fri Oct 19 17:22:23 2018 +0200
 
     ajout du timeout dans le receiver
-
- src/receiver.c | 15 +++++++++++----
- 1 file changed, 11 insertions(+), 4 deletions(-)
 
 commit b83d62e04788618da07f4d7be4a4db2ee51a01df
 Author: Hadri2103 <h.plancq@gmail.com>
@@ -244,23 +266,11 @@ Date:   Fri Oct 19 15:58:47 2018 +0200
 
     Suite de test du prof
 
- LINGI1341-linksim-master/LICENSE     |  22 ++
- LINGI1341-linksim-master/link_sim    | Bin 0 -> 22920 bytes
- LINGI1341-linksim-master/link_sim.c  | 588 +++++++++++++++++++++++++++++++++++
- LINGI1341-linksim-master/min_queue.c | 170 ++++++++++
- LINGI1341-linksim-master/min_queue.h |  66 ++++
- 5 files changed, 846 insertions(+)
-
 commit b3b94054ee1d112dd3e5e6f27acca505059ed582
 Author: Navarre Navarre <louisna@windu.info.ucl.ac.be>
 Date:   Fri Oct 19 15:43:50 2018 +0200
 
     Petits changements
-
- src/receiver.c |  4 ++--
- src/sender.c   | 10 +---------
- test.sh        |  2 +-
- 3 files changed, 4 insertions(+), 12 deletions(-)
 
 commit f96b26cdcd2dad96af89378c270ff251af566ca3
 Author: Navarre Navarre <louisna@windu.info.ucl.ac.be>
@@ -268,20 +278,11 @@ Date:   Fri Oct 19 15:24:03 2018 +0200
 
     suppression d'un warning
 
- src/receiver.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
 commit 0eb3256a7b1a22485fcdc4553d6b745451ab87ad
 Author: Navarre Navarre <louisna@windu.info.ucl.ac.be>
 Date:   Fri Oct 19 15:22:09 2018 +0200
 
     suite de test du prof et modif du receiver
-
- LINGI1341-linksim-master/Makefile  | 35 +++++++++++++++++++++++
- LINGI1341-linksim-master/README.md | 26 +++++++++++++++++
- src/receiver.c                     | 22 +++++++--------
- test.sh                            | 58 ++++++++++++++++++++++++++++++++++++++
- 4 files changed, 130 insertions(+), 11 deletions(-)
 
 commit fa608ff90be49c4d3797012c1fc674180a304e9d
 Author: louisnavarre <navarre.louis@student.uclouvain.be>
@@ -289,17 +290,11 @@ Date:   Fri Oct 19 15:19:13 2018 +0200
 
     Nouveau test
 
- tests/test_nyancat.c | 126 +++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 126 insertions(+)
-
 commit 5b66d89b640f90202df4d174eca2397674e75fd7
 Author: louisnavarre <navarre.louis@student.uclouvain.be>
 Date:   Fri Oct 19 15:17:27 2018 +0200
 
     petit bug
-
- tests/test_packet.c | 1 -
- 1 file changed, 1 deletion(-)
 
 commit 7b7d52cc645922d22b35475e99774ed2baf56331
 Merge: 1779af1 7876139
@@ -314,17 +309,11 @@ Date:   Fri Oct 19 15:11:09 2018 +0200
 
     update gitignore avec la suite de tests
 
- .gitignore | 2 ++
- 1 file changed, 2 insertions(+)
-
 commit 78761393d7f42454f9f237a6ea29e5663bdc07cf
 Author: louisnavarre <navarre.louis@student.uclouvain.be>
 Date:   Fri Oct 19 14:34:01 2018 +0200
 
     test packet
-
- tests/test_packet.c | 52 +++++++++++++++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 51 insertions(+), 1 deletion(-)
 
 commit 749043f8fc4cabe5a621443c815ca38e395595d7
 Author: Navarre Navarre <louisna@windu.info.ucl.ac.be>
@@ -332,18 +321,11 @@ Date:   Fri Oct 19 13:52:20 2018 +0200
 
     tentative de debug
 
- src/sender.c | 39 +++++++++++++++++++++++----------------
- 1 file changed, 23 insertions(+), 16 deletions(-)
-
 commit ee8aa37e4deabd12b57a77e4d0295a923a029650
 Author: Hadri2103 <h.plancq@gmail.com>
 Date:   Fri Oct 19 13:34:37 2018 +0200
 
     la window est mainteant dinamique
-
- src/receiver.c | 17 ++++++++++-------
- src/sender.c   |  4 +++-
- 2 files changed, 13 insertions(+), 8 deletions(-)
 
 commit 410af5c8431687098192cb77ec6186df7237d150
 Author: louisnavarre <navarre.louis@student.uclouvain.be>
@@ -351,26 +333,17 @@ Date:   Fri Oct 19 12:59:19 2018 +0200
 
     ajout premier test
 
- tests/test_packet.c | 104 ++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 104 insertions(+)
-
 commit e01711688faccd3fb16f65a61ab464a0bae16da3
 Author: louisna <37408317+louisna@users.noreply.github.com>
 Date:   Thu Oct 18 22:20:19 2018 +0200
 
     pour ne pas ignorer les tests
 
- .gitignore | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
-
 commit 691b1cfa38f4ac35ff610b1c8ff4723684b0b5c3
 Author: louisnavarre <navarre.louis@student.uclouvain.be>
 Date:   Thu Oct 18 22:16:55 2018 +0200
 
     setters modifiés pour les tests
-
- src/packet_implement.c | 28 +++++++++++++++++++---------
- 1 file changed, 19 insertions(+), 9 deletions(-)
 
 commit 2ffa03e0e07910a33c059b27dbbdd00265536c94
 Author: louisnavarre <navarre.louis@student.uclouvain.be>
@@ -379,9 +352,6 @@ Date:   Thu Oct 18 22:05:28 2018 +0200
     window full géré (c'était déjà le cas en fait)
     
     Fallait juste retirer le window already full
-
- src/sender.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
 
 commit 8a174a467dd08101d75c622f2031e47a399782c4
 Author: louisnavarre <navarre.louis@student.uclouvain.be>
@@ -394,19 +364,11 @@ Date:   Thu Oct 18 21:59:41 2018 +0200
     Gros paquets géré
     Problèmes encore à gérer: window + si on veut écrire + que la window disponible
 
- src/receiver.c | 18 ++++++++++++++--
- src/sender.c   | 66 +++++++++++++++++++++++++++++++++++++++++++---------------
- 2 files changed, 65 insertions(+), 19 deletions(-)
-
 commit c89369c440a0cba8d95b49c3f2807abd93e9f703
 Author: Hadri2103 <h.plancq@gmail.com>
 Date:   Wed Oct 17 18:42:23 2018 +0200
 
     check timeout
-
- src/receiver.c | 5 -----
- src/sender.c   | 6 +++---
- 2 files changed, 3 insertions(+), 8 deletions(-)
 
 commit 2fa69e0a9a5b72cca3456c5096bda571617ceee8
 Author: Hadri2103 <h.plancq@gmail.com>
@@ -414,19 +376,11 @@ Date:   Wed Oct 17 17:17:51 2018 +0200
 
     débug du reste de ton code
 
- src/packet_implement.c | 11 +++++++++--
- src/receiver.c         | 19 ++++++++++++-------
- 2 files changed, 21 insertions(+), 9 deletions(-)
-
 commit bdbf7ea8efbe2ce0137b6c4e16c84b049fb87181
 Author: Hadri2103 <h.plancq@gmail.com>
 Date:   Wed Oct 17 16:32:03 2018 +0200
 
     Debug des fonctions nulles que t'as fait hier
-
- src/receiver.c |  2 +-
- src/sender.c   | 84 ++++++++++++++++++++++------------------------------------
- 2 files changed, 33 insertions(+), 53 deletions(-)
 
 commit 5f6ae338425910c0406a3c304a9602dceafabb5a
 Merge: 1506797 1c07c3a
@@ -441,18 +395,11 @@ Date:   Wed Oct 17 15:34:41 2018 +0200
 
     debug list_r
 
- src/receiver.c | 22 +++++++++++++---------
- src/sender.c   |  2 +-
- 2 files changed, 14 insertions(+), 10 deletions(-)
-
 commit 1c07c3a1329bf175f2ae3145c69c9d9dc64c1801
 Author: Hadri2103 <h.plancq@gmail.com>
 Date:   Wed Oct 17 14:59:03 2018 +0200
 
     retiré les timeval
-
- src/receiver.c | 5 +----
- 1 file changed, 1 insertion(+), 4 deletions(-)
 
 commit a5a3976a0101a9df49b4da834edefdff658390bd
 Author: louisnavarre <navarre.louis@student.uclouvain.be>
@@ -460,19 +407,11 @@ Date:   Wed Oct 17 14:42:16 2018 +0200
 
     regle bugs fd sfd
 
- src/receiver.c | 10 ++++++----
- src/sender.c   | 16 +++++++++++-----
- 2 files changed, 17 insertions(+), 9 deletions(-)
-
 commit 01ef80e2e77a3662b115f23de45dd59657966d08
 Author: louisnavarre <navarre.louis@student.uclouvain.be>
 Date:   Wed Oct 17 11:42:46 2018 +0200
 
     changements majeurs dans receiver
-
- src/nyancat.c  |   4 +++
- src/receiver.c | 109 +++++++++++++++++++++++++++++++++++++++++++++++++++------
- 2 files changed, 103 insertions(+), 10 deletions(-)
 
 commit d48aaf23e99a7cf58da5e12f11c2b8d760e34f5e
 Author: louisnavarre <navarre.louis@student.uclouvain.be>
@@ -480,18 +419,11 @@ Date:   Wed Oct 17 10:13:50 2018 +0200
 
     hadri
 
- src/receiver.c | 50 ++++++++++++++++++++++++--------------------------
- 1 file changed, 24 insertions(+), 26 deletions(-)
-
 commit 889e068c2876273d7d8c8fae86a40b73af855f3e
 Author: louisnavarre <navarre.louis@student.uclouvain.be>
 Date:   Tue Oct 16 22:35:27 2018 +0200
 
     petits changements inutiles
-
- src/receiver.c | 18 +++++++++++-------
- src/sender.c   | 24 ++++++++++--------------
- 2 files changed, 21 insertions(+), 21 deletions(-)
 
 commit a273a25745692005de6d4d36d73a04ac3835815d
 Author: louisnavarre <navarre.louis@student.uclouvain.be>
@@ -499,21 +431,11 @@ Date:   Tue Oct 16 22:08:04 2018 +0200
 
     comments done
 
- src/receiver.c | 50 ++++++++++++++++++++++++++++++++++++++++++++++----
- 1 file changed, 46 insertions(+), 4 deletions(-)
-
 commit 5d1f5c1c23ee097cdf81e263fddffe1b409eef78
 Author: louisnavarre <navarre.louis@student.uclouvain.be>
 Date:   Tue Oct 16 21:57:51 2018 +0200
 
     BOOOOM RECEIVER
-
- Makefile       |   2 +-
- src/nyancat.c  | 101 ++++++++++++++++++++++++++++++++
- src/nyancat.h  |  29 +++++++++-
- src/receiver.c | 177 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++-
- src/sender.c   |  16 +++---
- 5 files changed, 312 insertions(+), 13 deletions(-)
 
 commit 25339f4777b09460e98292c36e2bce3a582c1a23
 Author: louisnavarre <navarre.louis@student.uclouvain.be>
@@ -523,17 +445,11 @@ Date:   Tue Oct 16 19:51:07 2018 +0200
     
     Maintenant à chaque nouveau packet envoyé, la window libre est MAX - taille de la liste (+1 car on ne compte pas le paquet sinon)
 
- src/sender.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
 commit bcf7726f129602b11bf6421d2a44066a2a50106a
 Author: louisnavarre <navarre.louis@student.uclouvain.be>
 Date:   Tue Oct 16 19:48:25 2018 +0200
 
     Changement ordre
-
- src/sender.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
 
 commit 69e8806008fb0cf06f3c3a074153991407567ccc
 Author: louisnavarre <navarre.louis@student.uclouvain.be>
@@ -541,18 +457,11 @@ Date:   Tue Oct 16 14:04:34 2018 +0200
 
     ajout pour les NACK
 
- src/sender.c | 20 +++++++++++++++-----
- 1 file changed, 15 insertions(+), 5 deletions(-)
-
 commit d972c8977d3360f01c69fccc5f54e7a9fbd48546
 Author: louisnavarre <navarre.louis@student.uclouvain.be>
 Date:   Tue Oct 16 13:48:10 2018 +0200
 
     receiver commencé + debug sender
-
- src/receiver.c | 51 +++++++++++++++++++++++++++++++++++++++++++++++++--
- src/sender.c   | 58 +++++++++++++++++++++++++++++++++++++++++++++++-----------
- 2 files changed, 96 insertions(+), 13 deletions(-)
 
 commit 333794776f3c8eec0e489c8df7e914f0dfaf4be7
 Author: hadri2103 <h.plancq@gmail.com>
@@ -560,17 +469,11 @@ Date:   Tue Oct 16 12:32:13 2018 +0200
 
     corrigé une erreur de variable
 
- src/sender.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
 commit 2f6135bf645265bff209fa8f207ea5846723f5fc
 Author: louisnavarre <navarre.louis@student.uclouvain.be>
 Date:   Tue Oct 16 12:25:34 2018 +0200
 
     check_timeout
-
- src/sender.c | 19 +++++++++++++++++++
- 1 file changed, 19 insertions(+)
 
 commit 9fa160e98f86dec8f9678a7060433f75ed6fd068
 Author: louisnavarre <navarre.louis@student.uclouvain.be>
@@ -578,19 +481,11 @@ Date:   Tue Oct 16 12:16:19 2018 +0200
 
     test non concluant sur pop_specific_element_queue
 
- src/sender.c | 9 ++++++---
- 1 file changed, 6 insertions(+), 3 deletions(-)
-
 commit 5f9b1fb0dcad059a6782f4fbd956c390de2de80e
 Author: louisnavarre <navarre.louis@student.uclouvain.be>
 Date:   Tue Oct 16 11:50:07 2018 +0200
 
     bug corrigés
-
- src/nyancat.c |  9 ++++++---
- src/nyancat.h |  1 +
- src/sender.c  | 21 +++++++++++++--------
- 3 files changed, 20 insertions(+), 11 deletions(-)
 
 commit 4677b61807ceeee0262d707fb8b0f0506b04496e
 Author: louisnavarre <navarre.louis@student.uclouvain.be>
@@ -601,18 +496,11 @@ Date:   Tue Oct 16 11:33:39 2018 +0200
     Ajout de pop_specific_element dans nyancat.c
     Ajout des fonctions pour le check_ack
 
- src/nyancat.c | 31 +++++++++++++++++++-
- src/sender.c  | 92 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 122 insertions(+), 1 deletion(-)
-
 commit d2a4c77af8de15487772414d50fedeb3461fa5b9
 Author: hadri2103 <h.plancq@gmail.com>
 Date:   Tue Oct 16 11:31:19 2018 +0200
 
     ajouts sur sender
-
- src/sender.c | 78 +++++++++++++++++++++++++++++++++++++++++++++++++-----------
- 1 file changed, 64 insertions(+), 14 deletions(-)
 
 commit dd7b4cc358f5272c969a60957453222eb29526d9
 Author: louisnavarre <navarre.louis@student.uclouvain.be>
@@ -620,18 +508,11 @@ Date:   Mon Oct 15 23:15:51 2018 +0200
 
     seqnum sur 256 et pas 255 + modulo marche
 
- src/sender.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
 commit 1c6bf41690ac32164943ae56ceec7fe0a90ff362
 Author: louisnavarre <navarre.louis@student.uclouvain.be>
 Date:   Mon Oct 15 22:57:23 2018 +0200
 
     read_to_list commencé
-
- src/packet_implement.c |  4 ++--
- src/sender.c           | 65 ++++++++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 67 insertions(+), 2 deletions(-)
 
 commit 317de9cc1938a0711b20be466abb21df922c82de
 Author: louisnavarre <navarre.louis@student.uclouvain.be>
@@ -639,22 +520,11 @@ Date:   Mon Oct 15 19:29:41 2018 +0200
 
     ajouts mineurs + commencé fonction process
 
- src/nyancat.c          | 16 +++++++++++++---
- src/nyancat.h          |  6 +++++-
- src/packet_implement.h |  6 ++++++
- src/receiver.c         |  4 ++++
- src/sender.c           | 52 +++++++++++++++++++++++++++++++++++++++++++++++++-
- 5 files changed, 79 insertions(+), 5 deletions(-)
-
 commit ab44cc11bbf9c7b5747205812584011a1847edc1
 Author: hadri2103 <h.plancq@gmail.com>
 Date:   Mon Oct 15 17:20:56 2018 +0200
 
     ajout de fonctions linked list
-
- src/nyancat.c | 50 ++++++++++++++++++++++++++++++++++++++++++++++++++
- src/nyancat.h | 15 +++++++++++++--
- 2 files changed, 63 insertions(+), 2 deletions(-)
 
 commit bbf1bdb64a7b6039aef7fab8a3bf2d5d4364d241
 Author: hadri2103 <h.plancq@gmail.com>
@@ -662,22 +532,11 @@ Date:   Mon Oct 15 16:32:23 2018 +0200
 
     push de ce que j'ai fait
 
- .gitignore             |   8 ++++----
- Makefile               |  14 +++++++-------
- nyancat.o              | Bin 2008 -> 0 bytes
- packet_implement.o     | Bin 7660 -> 0 bytes
- src/nyancat.h          |   3 ++-
- src/packet_implement.c |  37 -------------------------------------
- 6 files changed, 13 insertions(+), 49 deletions(-)
-
 commit fee57159ac22bd3867e1b4abf28031a71e5aad1e
 Author: hadri2103 <h.plancq@gmail.com>
 Date:   Mon Oct 15 16:27:06 2018 +0200
 
     idem
-
- .gitignore | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
 
 commit 0bbbcd9d9c461231789174fc4c620f34d9131a4c
 Author: hadri2103 <h.plancq@gmail.com>
@@ -685,17 +544,11 @@ Date:   Mon Oct 15 16:26:06 2018 +0200
 
     change gitignore
 
- .gitignore | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
 commit 29d22f7a1a79df15b261471f61fad2058d04adfc
 Author: hadri2103 <h.plancq@gmail.com>
 Date:   Mon Oct 15 15:34:50 2018 +0200
 
     makefile change
-
- Makefile | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
 
 commit 2b5fafc2f546a324986ab2d51da7373d0a962a9e
 Author: hadri2103 <h.plancq@gmail.com>
@@ -703,18 +556,11 @@ Date:   Mon Oct 15 15:32:18 2018 +0200
 
     déplacement des include en essayant de régler le bug
 
- src/nyancat.c | 12 +-----------
- src/nyancat.h | 14 ++++++++++++--
- 2 files changed, 13 insertions(+), 13 deletions(-)
-
 commit ad978700bc5328599a28450109a7404c3ab0700d
 Author: louisnavarre <navarre.louis@student.uclouvain.be>
 Date:   Mon Oct 15 15:14:01 2018 +0200
 
     fd au lieu de d
-
- src/sender.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
 
 commit 8ecd8d81c53221dc4ffda929747f2c579940dddf
 Author: louisnavarre <navarre.louis@student.uclouvain.be>
@@ -722,21 +568,11 @@ Date:   Mon Oct 15 15:11:56 2018 +0200
 
     erreurs corrigées (compil)
 
- nyancat.o              | Bin 0 -> 2008 bytes
- packet_implement.o     | Bin 0 -> 7660 bytes
- src/nyancat.c          |   3 ++-
- src/nyancat.h          |   3 ++-
- src/packet_implement.c |   2 +-
- 5 files changed, 5 insertions(+), 3 deletions(-)
-
 commit 10c4db1e710e4e73280498959398782f5caecbde
 Author: louisnavarre <navarre.louis@student.uclouvain.be>
 Date:   Mon Oct 15 15:09:46 2018 +0200
 
     ajout sturctures lists nyan
-
- src/nyancat.h | 25 +++++++++++++++++++++----
- 1 file changed, 21 insertions(+), 4 deletions(-)
 
 commit 81a8bc40c5f98c84c0e835b0c663243be726b3a4
 Author: hadri2103 <h.plancq@gmail.com>
@@ -744,19 +580,11 @@ Date:   Mon Oct 15 15:08:05 2018 +0200
 
     changement makefile
 
- .gitignore |  3 ++-
- Makefile   | 19 ++++++++++---------
- 2 files changed, 12 insertions(+), 10 deletions(-)
-
 commit 6ae032031dcf9a93f9a1b63817cb9e9c33c063e3
 Author: hadri2103 <h.plancq@gmail.com>
 Date:   Mon Oct 15 14:59:21 2018 +0200
 
     modification des include
-
- src/receiver.c | 6 ++----
- src/sender.c   | 6 ++----
- 2 files changed, 4 insertions(+), 8 deletions(-)
 
 commit ef7cc16f6d66efe1286e1c5cd8da86ee9e09e95c
 Author: hadri2103 <h.plancq@gmail.com>
@@ -764,20 +592,11 @@ Date:   Mon Oct 15 14:50:28 2018 +0200
 
     gitignore final
 
- .gitignore | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
 commit 31e754bb14f1816de1f1501f022adba989789138
 Author: louisnavarre <navarre.louis@student.uclouvain.be>
 Date:   Mon Oct 15 14:48:56 2018 +0200
 
     Ajout des deux fichiers + headers
-
- src/nyancat.c          |  59 ++++++++
- src/nyancat.h          |  25 ++++
- src/packet_implement.c | 375 +++++++++++++++++++++++++++++++++++++++++++++++++
- src/packet_implement.h | 124 ++++++++++++++++
- 4 files changed, 583 insertions(+)
 
 commit d587454f8446e987dcb8ee7f2fd86ffcace0eaf2
 Author: hadri2103 <h.plancq@gmail.com>
@@ -785,19 +604,11 @@ Date:   Mon Oct 15 14:45:05 2018 +0200
 
     suite
 
- .../envoyer_recevoir_donnees/create_socket.h.gch      | Bin 2004368 -> 0 bytes
- .../envoyer_recevoir_donnees/real_address.h.gch       | Bin 2004368 -> 0 bytes
- .../envoyer_recevoir_donnees/real_write_loop.h        |  11 -----------
- 3 files changed, 11 deletions(-)
-
 commit 67601fa1e3cf4a3088388778c19737758dab5a2a
 Author: hadri2103 <h.plancq@gmail.com>
 Date:   Mon Oct 15 14:39:19 2018 +0200
 
     netoyage des fichiers mac
-
- src/inginious/envoyer_recevoir_donnees/.DS_Store | Bin 6148 -> 0 bytes
- 1 file changed, 0 insertions(+), 0 deletions(-)
 
 commit a0c5b967a67dde51e9a415e32805adf9ab6fb5cd
 Author: hadri2103 <h.plancq@gmail.com>
@@ -805,51 +616,11 @@ Date:   Mon Oct 15 14:35:20 2018 +0200
 
     clean chat
 
- src/inginious/envoyer_recevoir_donnees/chat             | Bin 13536 -> 0 bytes
- src/inginious/envoyer_recevoir_donnees/chat.o           | Bin 3696 -> 0 bytes
- src/inginious/envoyer_recevoir_donnees/create_socket.o  | Bin 2520 -> 0 bytes
- .../envoyer_recevoir_donnees/read_write_loop.o          | Bin 3152 -> 0 bytes
- src/inginious/envoyer_recevoir_donnees/real_address.o   | Bin 1768 -> 0 bytes
- .../envoyer_recevoir_donnees/wait_for_client.o          | Bin 2168 -> 0 bytes
- 6 files changed, 0 insertions(+), 0 deletions(-)
-
 commit 50fcc97a1c7eb7e4e849f2fc2afa2f10972ab119
 Author: hadri2103 <h.plancq@gmail.com>
 Date:   Mon Oct 15 14:32:21 2018 +0200
 
     un inginious sauvage apparait
-
- src/inginious/decoder_encore_structures/Makefile   |  29 ++
- src/inginious/decoder_encore_structures/database.c |  38 ++
- src/inginious/decoder_encore_structures/macros.h   |  17 +
- src/inginious/decoder_encore_structures/reading.c  |  79 +++
- src/inginious/decoder_encore_structures/record.c   | 168 +++++++
- src/inginious/decoder_encore_structures/record.h   | 122 +++++
- src/inginious/envoyer_recevoir_donnees/.DS_Store   | Bin 0 -> 6148 bytes
- src/inginious/envoyer_recevoir_donnees/Makefile    |  29 ++
- src/inginious/envoyer_recevoir_donnees/chat        | Bin 0 -> 13536 bytes
- src/inginious/envoyer_recevoir_donnees/chat.c      |  72 +++
- src/inginious/envoyer_recevoir_donnees/chat.o      | Bin 0 -> 3696 bytes
- .../envoyer_recevoir_donnees/create_socket.c       |  39 ++
- .../envoyer_recevoir_donnees/create_socket.h       |  20 +
- .../envoyer_recevoir_donnees/create_socket.h.gch   | Bin 0 -> 2004368 bytes
- .../envoyer_recevoir_donnees/create_socket.o       | Bin 0 -> 2520 bytes
- .../envoyer_recevoir_donnees/read_write_loop.c     |  63 +++
- .../envoyer_recevoir_donnees/read_write_loop.h     |  11 +
- .../envoyer_recevoir_donnees/read_write_loop.o     | Bin 0 -> 3152 bytes
- .../envoyer_recevoir_donnees/real_address.c        |  33 ++
- .../envoyer_recevoir_donnees/real_address.h        |  17 +
- .../envoyer_recevoir_donnees/real_address.h.gch    | Bin 0 -> 2004368 bytes
- .../envoyer_recevoir_donnees/real_address.o        | Bin 0 -> 1768 bytes
- .../envoyer_recevoir_donnees/real_write_loop.h     |  11 +
- .../envoyer_recevoir_donnees/wait_for_client.c     |  31 ++
- .../envoyer_recevoir_donnees/wait_for_client.h     |  13 +
- .../envoyer_recevoir_donnees/wait_for_client.o     | Bin 0 -> 2168 bytes
- src/inginious/format_segment/correction.c          | 529 +++++++++++++++++++++
- src/inginious/format_segment/packet_implement.c    | 375 +++++++++++++++
- src/inginious/format_segment/packet_interface.h    | 124 +++++
- src/inginious/interpreter_commande/interpreter.c   |  79 +++
- 30 files changed, 1899 insertions(+)
 
 commit 02d6c4d3c72c7abb0560eab726f2a20a47b31a6d
 Author: hadri2103 <h.plancq@gmail.com>
@@ -857,40 +628,11 @@ Date:   Mon Oct 15 14:22:26 2018 +0200
 
     Changement de place des inginious
 
- src/decoder_encore_structures/Makefile         |  29 --
- src/decoder_encore_structures/database.c       |  38 --
- src/decoder_encore_structures/macros.h         |  17 -
- src/decoder_encore_structures/reading.c        |  79 ----
- src/decoder_encore_structures/record.c         | 168 --------
- src/decoder_encore_structures/record.h         | 122 ------
- src/envoyer_recevoir_donnees/.DS_Store         | Bin 6148 -> 0 bytes
- src/envoyer_recevoir_donnees/Makefile          |  29 --
- src/envoyer_recevoir_donnees/chat.c            |  72 ----
- src/envoyer_recevoir_donnees/create_socket.c   |  39 --
- src/envoyer_recevoir_donnees/create_socket.h   |  20 -
- src/envoyer_recevoir_donnees/read_write_loop.c |  63 ---
- src/envoyer_recevoir_donnees/read_write_loop.h |  11 -
- src/envoyer_recevoir_donnees/real_address.c    |  33 --
- src/envoyer_recevoir_donnees/real_address.h    |  17 -
- src/envoyer_recevoir_donnees/real_write_loop.h |  11 -
- src/envoyer_recevoir_donnees/wait_for_client.c |  31 --
- src/envoyer_recevoir_donnees/wait_for_client.h |  13 -
- src/format_segment/correction.c                | 529 -------------------------
- src/format_segment/packet_implement.c          | 375 ------------------
- src/format_segment/packet_interface.h          | 124 ------
- src/interpreter_commande/interpreter.c         |  79 ----
- 22 files changed, 1899 deletions(-)
-
 commit a3273371fcfa0dcf1fbfb4a0b2ce2cb52596c343
 Author: louisnavarre <navarre.louis@student.uclouvain.be>
 Date:   Sun Oct 14 22:45:55 2018 +0200
 
     reveiver (erreur) retiré + fichier sender receiver
-
- src/receiver.c | 83 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- src/reveiver.c | 80 -------------------------------------------------------
- src/sender.c   |  2 +-
- 3 files changed, 84 insertions(+), 81 deletions(-)
 
 commit a24de5ecbc754610b2f72a7abdc4d6a64214df2c
 Author: louisna <37408317+louisna@users.noreply.github.com>
@@ -898,17 +640,11 @@ Date:   Sun Oct 14 22:43:28 2018 +0200
 
     Create receiver.c
 
- src/receiver.c | 1 +
- 1 file changed, 1 insertion(+)
-
 commit 3c32f2fdef4a10077d6ad3117537dd16b17977d7
 Author: louisnavarre <navarre.louis@student.uclouvain.be>
 Date:   Sun Oct 14 22:40:00 2018 +0200
 
     petite modification dans sender
-
- src/sender.c | 14 ++++++++++++--
- 1 file changed, 12 insertions(+), 2 deletions(-)
 
 commit 323d23491a802b520322ca08f176fb6d4491dc60
 Author: louisnavarre <navarre.louis@student.uclouvain.be>
@@ -916,25 +652,11 @@ Date:   Sun Oct 14 22:01:31 2018 +0200
 
     Makefile commencé
 
- Makefile     | 30 ++++++++++++++++++++++++++++++
- src/sender.c |  3 ++-
- 2 files changed, 32 insertions(+), 1 deletion(-)
-
 commit f42e1c0b9b3432bfac18ac0b73be6a09689cbce2
 Author: hadri2103 <h.plancq@gmail.com>
 Date:   Sun Oct 14 18:30:18 2018 +0200
 
     supression des fichiers spécifiques à l'ordi de louis et update du gitignore
-
- .gitignore                               |   8 +++++---
- src/.DS_Store                            | Bin 6148 -> 0 bytes
- src/decoder_encore_structures/.DS_Store  | Bin 6148 -> 0 bytes
- src/decoder_encore_structures/output.dms | Bin 48 -> 0 bytes
- src/decoder_encore_structures/test       | Bin 9488 -> 0 bytes
- src/decoder_encore_structures/test.dms   |   0
- src/decoder_encore_structures/test.txt   | Bin 29 -> 0 bytes
- src/format_segment/test                  | Bin 13996 -> 0 bytes
- 8 files changed, 5 insertions(+), 3 deletions(-)
 
 commit ef36a42f51d6f96512ed3566f22f5263e0a56280
 Author: hadri2103 <h.plancq@gmail.com>
@@ -942,19 +664,11 @@ Date:   Sun Oct 14 18:18:44 2018 +0200
 
     supression d'un doublon et modification du gitignore
 
- .gitignore                                 |  1 +
- src/envoyer_recevoir_donnees/real_adress.h | 17 -----------------
- 2 files changed, 1 insertion(+), 17 deletions(-)
-
 commit 41451a5ded062bc4413bc28a08b253d3303a50f3
 Author: hadri2103 <h.plancq@gmail.com>
 Date:   Sun Oct 14 18:00:38 2018 +0200
 
     ajout d'un gitignore
-
- .DS_Store  | Bin 6148 -> 0 bytes
- .gitignore |   2 ++
- 2 files changed, 2 insertions(+)
 
 commit 75f0c83fa312faa2e3022b2854d7ed0a4793a3d3
 Author: hadri2103 <h.plancq@gmail.com>
@@ -962,34 +676,17 @@ Date:   Sun Oct 14 17:54:59 2018 +0200
 
     finit de setup
 
- Test | 0
- 1 file changed, 0 insertions(+), 0 deletions(-)
-
 commit 7a2bf17481b99102fc02efc6b3b101cb60777675
 Author: Hadri2103 <h.plancq@gmail.com>
 Date:   Sun Oct 14 17:48:13 2018 +0200
 
     test de setup de mon git sur linux
 
- Test | 0
- 1 file changed, 0 insertions(+), 0 deletions(-)
-
 commit 96c148e2203be66cf40fea8535d53fa5cd1302b0
 Author: louisnavarre <navarre.louis@student.uclouvain.be>
 Date:   Sun Oct 14 00:03:41 2018 +0200
 
     main de sender et receiver fait (presque tout)
-
- src/envoyer_recevoir_donnees/chat              | Bin 9604 -> 0 bytes
- src/envoyer_recevoir_donnees/chat.o            | Bin 2188 -> 0 bytes
- src/envoyer_recevoir_donnees/create_socket.o   | Bin 1312 -> 0 bytes
- src/envoyer_recevoir_donnees/read_write_loop.o | Bin 1660 -> 0 bytes
- src/envoyer_recevoir_donnees/real_address.o    | Bin 976 -> 0 bytes
- src/envoyer_recevoir_donnees/wait_for_client.o | Bin 1184 -> 0 bytes
- src/reveiver.c                                 |  80 +++++++++++++++++++++++++
- src/sender                                     | Bin 8492 -> 0 bytes
- src/sender.c                                   |  44 +++++++++++++-
- 9 files changed, 123 insertions(+), 1 deletion(-)
 
 commit 5f2999f4c9f171eb932c89d6d064dfa8c68cb8ad
 Author: louisnavarre <navarre.louis@student.uclouvain.be>
@@ -999,57 +696,11 @@ Date:   Sat Oct 13 18:50:36 2018 +0200
     
     pas beaucoup ajouté
 
- src/sender.c | 16 ++++++++++++++--
- 1 file changed, 14 insertions(+), 2 deletions(-)
-
 commit 17338ca7076e600402ee48d5517265eeb78ce211
 Author: louisnavarre <navarre.louis@student.uclouvain.be>
 Date:   Sat Oct 13 17:03:23 2018 +0200
 
     change data
-
- .DS_Store                                          | Bin 0 -> 6148 bytes
- .../envoyer_recevoir_donnees/read_write_loop.o     | Bin 1636 -> 0 bytes
- prerequisites/format_segment/packet_implement.c    | 362 --------------------
- src/.DS_Store                                      | Bin 0 -> 6148 bytes
- src/decoder_encore_structures/.DS_Store            | Bin 0 -> 6148 bytes
- .../decoder_encore_structures/Makefile             |   0
- .../decoder_encore_structures/database.c           |   0
- .../decoder_encore_structures/macros.h             |   0
- .../decoder_encore_structures/output.dms           | Bin
- .../decoder_encore_structures/reading.c            |   0
- .../decoder_encore_structures/record.c             |   0
- .../decoder_encore_structures/record.h             |   0
- .../decoder_encore_structures/test                 | Bin
- .../decoder_encore_structures/test.dms             |   0
- .../decoder_encore_structures/test.txt             | Bin
- src/envoyer_recevoir_donnees/.DS_Store             | Bin 0 -> 6148 bytes
- .../envoyer_recevoir_donnees/Makefile              |   0
- .../envoyer_recevoir_donnees/chat                  | Bin 9564 -> 9604 bytes
- .../envoyer_recevoir_donnees/chat.c                |   0
- .../envoyer_recevoir_donnees/chat.o                | Bin
- .../envoyer_recevoir_donnees/create_socket.c       |   0
- .../envoyer_recevoir_donnees/create_socket.h       |   0
- .../envoyer_recevoir_donnees/create_socket.o       | Bin
- .../envoyer_recevoir_donnees/read_write_loop.c     |   2 +-
- .../envoyer_recevoir_donnees/read_write_loop.h     |   0
- src/envoyer_recevoir_donnees/read_write_loop.o     | Bin 0 -> 1660 bytes
- .../envoyer_recevoir_donnees/real_address.c        |   0
- .../envoyer_recevoir_donnees/real_address.h        |   0
- .../envoyer_recevoir_donnees/real_address.o        | Bin
- .../envoyer_recevoir_donnees/real_adress.h         |   0
- .../envoyer_recevoir_donnees/real_write_loop.h     |   0
- .../envoyer_recevoir_donnees/wait_for_client.c     |   0
- .../envoyer_recevoir_donnees/wait_for_client.h     |   0
- .../envoyer_recevoir_donnees/wait_for_client.o     | Bin
- {prerequisites => src}/format_segment/correction.c |   0
- src/format_segment/packet_implement.c              | 375 +++++++++++++++++++++
- .../format_segment/packet_interface.h              |   0
- {prerequisites => src}/format_segment/test         | Bin 14080 -> 13996 bytes
- .../interpreter_commande/interpreter.c             |   0
- src/sender                                         | Bin 0 -> 8492 bytes
- src/sender.c                                       |  20 ++
- 41 files changed, 396 insertions(+), 363 deletions(-)
 
 commit 6dfa084038cc4a4524f05f328463d9ab3d9330ef
 Author: louisnavarre <navarre.louis@student.uclouvain.be>
@@ -1057,55 +708,14 @@ Date:   Tue Oct 9 10:18:14 2018 +0200
 
     prerequisites
 
- prerequisites/decoder_encore_structures/Makefile   |  29 ++
- prerequisites/decoder_encore_structures/database.c |  38 ++
- prerequisites/decoder_encore_structures/macros.h   |  17 +
- prerequisites/decoder_encore_structures/output.dms | Bin 0 -> 48 bytes
- prerequisites/decoder_encore_structures/reading.c  |  79 +++
- prerequisites/decoder_encore_structures/record.c   | 168 +++++++
- prerequisites/decoder_encore_structures/record.h   | 122 +++++
- prerequisites/decoder_encore_structures/test       | Bin 0 -> 9488 bytes
- prerequisites/decoder_encore_structures/test.dms   |   0
- prerequisites/decoder_encore_structures/test.txt   | Bin 0 -> 29 bytes
- prerequisites/envoyer_recevoir_donnees/Makefile    |  29 ++
- prerequisites/envoyer_recevoir_donnees/chat        | Bin 0 -> 9564 bytes
- prerequisites/envoyer_recevoir_donnees/chat.c      |  72 +++
- prerequisites/envoyer_recevoir_donnees/chat.o      | Bin 0 -> 2188 bytes
- .../envoyer_recevoir_donnees/create_socket.c       |  39 ++
- .../envoyer_recevoir_donnees/create_socket.h       |  20 +
- .../envoyer_recevoir_donnees/create_socket.o       | Bin 0 -> 1312 bytes
- .../envoyer_recevoir_donnees/read_write_loop.c     |  63 +++
- .../envoyer_recevoir_donnees/read_write_loop.h     |  11 +
- .../envoyer_recevoir_donnees/read_write_loop.o     | Bin 0 -> 1636 bytes
- .../envoyer_recevoir_donnees/real_address.c        |  33 ++
- .../envoyer_recevoir_donnees/real_address.h        |  17 +
- .../envoyer_recevoir_donnees/real_address.o        | Bin 0 -> 976 bytes
- .../envoyer_recevoir_donnees/real_adress.h         |  17 +
- .../envoyer_recevoir_donnees/real_write_loop.h     |  11 +
- .../envoyer_recevoir_donnees/wait_for_client.c     |  31 ++
- .../envoyer_recevoir_donnees/wait_for_client.h     |  13 +
- .../envoyer_recevoir_donnees/wait_for_client.o     | Bin 0 -> 1184 bytes
- prerequisites/format_segment/correction.c          | 529 +++++++++++++++++++++
- prerequisites/format_segment/packet_implement.c    | 362 ++++++++++++++
- prerequisites/format_segment/packet_interface.h    | 124 +++++
- prerequisites/format_segment/test                  | Bin 0 -> 14080 bytes
- prerequisites/interpreter_commande/interpreter.c   |  79 +++
- 33 files changed, 1903 insertions(+)
-
 commit 371529a02f6c4c59a2371f68907fc47b762bc867
 Author: louisna <37408317+louisna@users.noreply.github.com>
 Date:   Tue Oct 9 10:11:00 2018 +0200
 
     Update README.md
 
- README.md | 6 ++++++
- 1 file changed, 6 insertions(+)
-
 commit 44050a0b0b911c41168ec53c66b735f349e0e321
 Author: louisna <37408317+louisna@users.noreply.github.com>
 Date:   Tue Oct 9 10:08:52 2018 +0200
 
     Initial commit
-
- README.md | 2 ++
- 1 file changed, 2 insertions(+)

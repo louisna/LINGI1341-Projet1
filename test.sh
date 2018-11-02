@@ -7,11 +7,11 @@ rm -f received_file input_file
 dd if=/dev/urandom of=input_file bs=1 count=200000 &> /dev/null
 
 # On lance le simulateur de lien avec 10% de pertes et un délais de 50ms
-./LINGI1341-linksim-master/link_sim -p 1341 -P 2456 -l 20 -d 30 -j 30 -c 02 -e 10 -R  &> link.log &
+./LINGI1341-linksim-master/link_sim -p 1341 -P 2456 -l 10 -d 10 -j 10 -c 02 -e 02 -R  &> link.log &
 link_pid=$!
 
 # On lance le receiver et capture sa sortie standard
-./receiver2 -f received_file :: 2456  2> receiver.log &
+./receiver -f sortie.txt :: 2456  2> receiver.log &
 receiver_pid=$!
 
 cleanup()
@@ -23,7 +23,7 @@ cleanup()
 trap cleanup SIGINT  # Kill les process en arrière plan en cas de ^-C
 
 # On démarre le transfert
-if ! ./sender ::1 1341 < input_file 2> sender.log ; then
+if ! ./sender ::1 1341 < test.txt 2> sender.log ; then
   echo "Crash du sender!"
   cat sender.log
   err=1  # On enregistre l'erreur
