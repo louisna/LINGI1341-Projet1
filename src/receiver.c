@@ -340,7 +340,6 @@ int wait_for_client(int sfd){
         fprintf(stderr, "Error using connect");
         return -1;
     }
-    printf("Connected!\n");
 
     return 0;
 }
